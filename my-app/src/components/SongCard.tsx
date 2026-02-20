@@ -21,6 +21,7 @@ interface SongCardProps {
   isActive?: boolean;
   showIndex?: boolean;
   index?: number;
+  playlistId?: string; // Optional: To indicate this song card is viewed inside a specific playlist
 }
 
 export const SongCard = React.memo<SongCardProps>(({
@@ -30,6 +31,7 @@ export const SongCard = React.memo<SongCardProps>(({
   isActive = false,
   showIndex = false,
   index,
+  playlistId,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const imageUrl = getBestImage(song.image);
@@ -92,6 +94,7 @@ export const SongCard = React.memo<SongCardProps>(({
           visible={modalVisible} 
           onClose={() => setModalVisible(false)} 
           song={song} 
+          playlistId={playlistId}
         />
     </View>
   );

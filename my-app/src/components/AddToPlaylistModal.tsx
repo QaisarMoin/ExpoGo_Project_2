@@ -12,17 +12,26 @@ import {
     View
 } from 'react-native';
 import { usePlaylistStore } from '../store/playlistStore';
-import { Playlist, Song } from '../types';
+import { Artist, Playlist, Song } from '../types';
 
 interface AddToPlaylistModalProps {
   visible: boolean;
   onClose: () => void;
-  song: Song | null;
+  song?: Song | null;
+  artist?: Artist | null;
+  itemType: 'song' | 'artist';
   onSuccess: () => void;
 }
 
-export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({ visible, onClose, song, onSuccess }) => {
-  const { playlists, loadPlaylists, createPlaylist, addSongToPlaylist } = usePlaylistStore();
+export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({ 
+  visible, 
+  onClose, 
+  song, 
+  artist,
+  itemType,
+  onSuccess 
+}) => {
+  const { playlists, loadPlaylists, createPlaylist, addSongToPlaylist, addArtistToPlaylist } = usePlaylistStore();
   const [isCreating, setIsCreating] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
 
@@ -42,9 +51,16 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({ visible,
   };
 
   const handleAddToPlaylist = async (playlist: Playlist) => {
-    if (!song) return;
-    await addSongToPlaylist(playlist.id, song);
-    Alert.alert('Success', 'Song added to playlist');
+    if (itemType === 'song' && song) {
+      await addSongToPlaylist(playlist.id, song);
+      Alert.alert('Success', 'Song added to playlist');
+    } else if (itemType === 'artist' && artist) {
+      await addArtistToPlaylist(playlist.id, artist);
+      Alert.alert('Success', 'Artist added to playlist');
+    } else {
+      return;
+    }
+    
     onClose();
     onSuccess(); // Triggers navigation in parent
   };
@@ -86,15 +102,36 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({ visible,
                     data={playlists}
                     keyExtractor={(item) => item.id}
                     style={styles.list}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity style={styles.playlistItem} onPress={() => handleAddToPlaylist(item)}>
-                        <Ionicons name="musical-notes-outline" size={24} color="#555" />
-                        <View style={styles.playlistInfo}>
-                          <Text style={styles.playlistName}>{item.name}</Text>
-                          <Text style={styles.playlistCount}>{item.songs.length} songs</Text>
-                        </View>
-                      </TouchableOpacity>
-                    )}
+                    renderItem={({ item }) => {
+                      const isAlreadyAdded = itemType === 'song' 
+                        ? (song ? item.songs.some(s => s.id === song.id) : false)
+                        : (artist ? (item.artists || []).some(a => a.id === artist.id) : false);
+                      
+                      return (
+                        <TouchableOpacity 
+                          style={[styles.playlistItem, isAlreadyAdded && styles.playlistItemDisabled]} 
+                          onPress={() => !isAlreadyAdded && handleAddToPlaylist(item)}
+                          activeOpacity={isAlreadyAdded ? 1 : 0.7}
+                        >
+                          <Ionicons 
+                            name="musical-notes-outline" 
+                            size={24} 
+                            color={isAlreadyAdded ? "#ccc" : "#555"} 
+                          />
+                          <View style={styles.playlistInfo}>
+                            <Text style={[styles.playlistName, isAlreadyAdded && styles.textDisabled]}>
+                              {item.name}
+                            </Text>
+                            <Text style={styles.playlistCount}>
+                              {item.songs.length} songs{item.artists?.length ? `, ${item.artists.length} artists` : ''}
+                            </Text>
+                          </View>
+                          {isAlreadyAdded && (
+                            <Ionicons name="checkmark-circle" size={20} color="#FF6B35" style={{ marginLeft: 'auto' }} />
+                          )}
+                        </TouchableOpacity>
+                      );
+                    }}
                     ListEmptyComponent={
                       <Text style={styles.emptyText}>No playlists yet. Create one!</Text>
                     }
@@ -157,6 +194,12 @@ const styles = StyleSheet.create({
   playlistName: {
     fontSize: 16,
     color: '#1A1A1A',
+  },
+  playlistItemDisabled: {
+    opacity: 0.7,
+  },
+  textDisabled: {
+    color: '#999',
   },
   playlistCount: {
     fontSize: 12,

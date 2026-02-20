@@ -50,6 +50,7 @@ export interface Playlist {
   id: string;
   name: string;
   songs: Song[];
+  artists?: Artist[]; // Added support for storing artists in a playlist
   createdAt: number;
 }
 

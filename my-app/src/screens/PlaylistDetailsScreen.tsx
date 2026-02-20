@@ -1,18 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ArtistCard } from '../components/ArtistCard';
 import { SongCard } from '../components/SongCard';
 import { usePlayerStore } from '../store/playerStore';
 import { usePlaylistStore } from '../store/playlistStore';
 import { RootStackParamList } from '../types';
 
 type PlaylistDetailsRouteProp = RouteProp<RootStackParamList, 'PlaylistDetails'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const PlaylistDetailsScreen = () => {
   const route = useRoute<PlaylistDetailsRouteProp>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const { playlistId } = route.params;
   
   const { playlists } = usePlaylistStore();
@@ -36,6 +39,20 @@ export const PlaylistDetailsScreen = () => {
     playSong(song, playlist.songs);
   };
 
+  const handleArtistPress = (artistId: string) => {
+    navigation.navigate('ArtistDetails', { artistId });
+  };
+
+  const hasSongs = playlist.songs.length > 0;
+  const hasArtists = playlist.artists && playlist.artists.length > 0;
+
+  // Create unified data array for FlatList if you want a single scroll view, 
+  // or render them in sections. We'll render artists first, then songs using a custom data array.
+  const listData = [
+    ...(playlist.artists || []).map(a => ({ type: 'artist' as const, data: a })),
+    ...playlist.songs.map((s, index) => ({ type: 'song' as const, data: s, originalIndex: index }))
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -50,26 +67,41 @@ export const PlaylistDetailsScreen = () => {
           <Ionicons name="musical-notes" size={48} color="#FF6B35" />
         </View>
         <Text style={styles.playlistName}>{playlist.name}</Text>
-        <Text style={styles.playlistCount}>{playlist.songs.length} songs</Text>
+        <Text style={styles.playlistCount}>
+          {playlist.songs.length} songs{playlist.artists?.length ? `, ${playlist.artists.length} artists` : ''}
+        </Text>
       </View>
 
       <FlatList
-        data={playlist.songs}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => (
-          <SongCard
-            song={item}
-            onPlay={handlePlaySong}
-            showIndex={true}
-            index={index}
-          />
-        )}
+        data={listData}
+        keyExtractor={(item) => item.type === 'song' ? `song-${item.data.id}` : `artist-${item.data.id}`}
+        renderItem={({ item }) => {
+          if (item.type === 'artist') {
+            return (
+              <ArtistCard
+                artist={item.data}
+                onPress={() => handleArtistPress(item.data.id)}
+                playlistId={playlist.id}
+              />
+            );
+          } else {
+            return (
+              <SongCard
+                song={item.data}
+                onPlay={handlePlaySong}
+                showIndex={true}
+                index={item.originalIndex}
+                playlistId={playlist.id}
+              />
+            );
+          }
+        }}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="musical-notes-outline" size={48} color="#ccc" />
             <Text style={styles.emptyText}>Playlist is empty</Text>
-            <Text style={styles.emptySubText}>Add songs to this playlist to see them here.</Text>
+            <Text style={styles.emptySubText}>Add songs or artists to this playlist to see them here.</Text>
           </View>
         }
       />

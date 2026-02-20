@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlaylistStore } from '../store/playlistStore';
 import { Playlist, RootStackParamList } from '../types';
@@ -10,12 +10,23 @@ import { Playlist, RootStackParamList } from '../types';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const PlaylistsScreen = () => {
-  const { playlists, loadPlaylists } = usePlaylistStore();
+  const { playlists, loadPlaylists, deletePlaylist } = usePlaylistStore();
   const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
     loadPlaylists();
   }, [loadPlaylists]);
+
+  const handleDeletePlaylist = (id: string, name: string) => {
+    Alert.alert(
+      "Delete Playlist",
+      `Are you sure you want to delete "${name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => deletePlaylist(id) }
+      ]
+    );
+  };
 
   const renderItem = ({ item }: { item: Playlist }) => (
     <TouchableOpacity 
@@ -27,8 +38,13 @@ export const PlaylistsScreen = () => {
       </View>
       <View style={styles.playlistInfo}>
         <Text style={styles.playlistName}>{item.name}</Text>
-        <Text style={styles.playlistCount}>{item.songs.length} songs</Text>
+        <Text style={styles.playlistCount}>
+          {item.songs.length} songs{item.artists?.length ? `, ${item.artists.length} artists` : ''}
+        </Text>
       </View>
+      <TouchableOpacity onPress={() => handleDeletePlaylist(item.id, item.name)} style={styles.deleteBtn}>
+        <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -103,6 +119,9 @@ const styles = StyleSheet.create({
   playlistCount: {
     fontSize: 13,
     color: '#888',
+  },
+  deleteBtn: {
+    padding: 8,
   },
   emptyContainer: {
     flex: 1,

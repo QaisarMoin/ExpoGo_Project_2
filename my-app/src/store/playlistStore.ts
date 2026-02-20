@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { Song } from '../types';
+import { Artist, Song } from '../types';
 
 const PLAYLISTS_KEY = '@music_player_playlists';
 
@@ -8,6 +8,7 @@ export interface Playlist {
   id: string;
   name: string;
   songs: Song[];
+  artists?: Artist[];
   createdAt: number;
 }
 
@@ -17,6 +18,8 @@ interface PlaylistState {
   createPlaylist: (name: string) => Promise<void>;
   addSongToPlaylist: (playlistId: string, song: Song) => Promise<void>;
   removeSongFromPlaylist: (playlistId: string, songId: string) => Promise<void>;
+  addArtistToPlaylist: (playlistId: string, artist: Artist) => Promise<void>;
+  removeArtistFromPlaylist: (playlistId: string, artistId: string) => Promise<void>;
   deletePlaylist: (playlistId: string) => Promise<void>;
   loadPlaylists: () => Promise<void>;
 }
@@ -44,6 +47,7 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
       id: Date.now().toString(),
       name,
       songs: [],
+      artists: [],
       createdAt: Date.now(),
     };
     const newPlaylists = [...playlists, newPlaylist];
@@ -76,6 +80,33 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
       });
       set({ playlists: newPlaylists });
       await AsyncStorage.setItem(PLAYLISTS_KEY, JSON.stringify(newPlaylists));
+  },
+
+  addArtistToPlaylist: async (playlistId: string, artist: Artist) => {
+    const { playlists } = get();
+    const newPlaylists = playlists.map((p) => {
+      if (p.id === playlistId) {
+        const currentArtists = p.artists || [];
+        if (!currentArtists.some(a => a.id === artist.id)) {
+          return { ...p, artists: [...currentArtists, artist] };
+        }
+      }
+      return p;
+    });
+    set({ playlists: newPlaylists });
+    await AsyncStorage.setItem(PLAYLISTS_KEY, JSON.stringify(newPlaylists));
+  },
+
+  removeArtistFromPlaylist: async (playlistId: string, artistId: string) => {
+    const { playlists } = get();
+    const newPlaylists = playlists.map((p) => {
+      if (p.id === playlistId) {
+        return { ...p, artists: (p.artists || []).filter(a => a.id !== artistId) };
+      }
+      return p;
+    });
+    set({ playlists: newPlaylists });
+    await AsyncStorage.setItem(PLAYLISTS_KEY, JSON.stringify(newPlaylists));
   },
 
   deletePlaylist: async (playlistId: string) => {

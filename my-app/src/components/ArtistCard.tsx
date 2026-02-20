@@ -1,26 +1,28 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Artist } from '../types';
 import { getBestImage } from '../services/api';
+import { Artist } from '../types';
+import { ArtistOptionsModal } from './ArtistOptionsModal';
 
 interface ArtistCardProps {
   artist: Artist;
   onPress: () => void;
-  onMorePress: () => void;
+  playlistId?: string; // Add this to allow passing playlistId context
 }
 
 export const ArtistCard = React.memo<ArtistCardProps>(({
   artist,
   onPress,
-  onMorePress,
+  playlistId,
 }) => {
+  const [modalVisible, setModalVisible] = React.useState(false);
   const imageUrl = getBestImage(artist.image);
 
   return (
@@ -43,9 +45,16 @@ export const ArtistCard = React.memo<ArtistCardProps>(({
           </Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.moreBtn} onPress={onMorePress}>
+      <TouchableOpacity style={styles.moreBtn} onPress={() => setModalVisible(true)}>
         <Ionicons name="ellipsis-vertical" size={20} color="#888" />
       </TouchableOpacity>
+
+      <ArtistOptionsModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        artist={artist}
+        playlistId={playlistId}
+      />
     </TouchableOpacity>
   );
 });
