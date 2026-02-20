@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { getBestImage } from '../services/api';
 import { usePlayerStore } from '../store/playerStore';
@@ -20,6 +21,40 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export const MiniPlayer: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { currentSong, isPlaying, togglePlayPause, clearPlayer } = usePlayerStore();
+  const [showTooltip, setShowTooltip] = useState(false);
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    if (currentSong) {
+      checkTooltip();
+    }
+  }, [currentSong]);
+
+  const checkTooltip = () => {
+    try {
+      if (!showTooltip) { // Just basic check
+        setShowTooltip(true);
+        
+        // Fade in
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+
+        // Hide after 5 seconds
+        setTimeout(() => {
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => setShowTooltip(false));
+        }, 5000);
+      }
+    } catch (e) {
+      console.log('Tooltip error', e);
+    }
+  };
 
   if (!currentSong) return null;
 
@@ -86,6 +121,17 @@ export const MiniPlayer: React.FC = () => {
 
       {/* Progress indicator (thin line) */}
       <View style={styles.progressBar} />
+
+      {/* Floating Tooltip */}
+      {showTooltip && (
+        <Animated.View style={[styles.tooltipContainer, { opacity: fadeAnim }]}>
+          <View style={styles.tooltipArrow} />
+          <View style={styles.tooltipContent}>
+            <Ionicons name="information-circle" size={16} color="#fff" style={styles.tooltipIcon} />
+            <Text style={styles.tooltipText}>Long press to remove player</Text>
+          </View>
+        </Animated.View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -152,5 +198,42 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: '#FF6B35',
     width: '40%',
+  },
+  tooltipContainer: {
+    position: 'absolute',
+    top: -45, // Hover above the MiniPlayer
+    alignSelf: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  tooltipArrow: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: 'rgba(0, 0, 0, 0.85)',
+    position: 'absolute',
+    bottom: -8,
+  },
+  tooltipContent: {
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tooltipIcon: {
+    marginRight: 6,
+  },
+  tooltipText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '500',
   },
 });
