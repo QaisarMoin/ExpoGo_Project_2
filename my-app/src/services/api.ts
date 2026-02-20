@@ -115,6 +115,8 @@ export async function getArtistDetails(id: string): Promise<any> {
 }
 
 export async function getArtistSongs(id: string, page: number = 1): Promise<{ songs: Song[]; total: number }> {
+    // The Unofficail JioSaavn API uses `page` for search but usually `page` or `p` for others. Let's ensure it's `page`.
+    // Wait, the documentation for getArtistSongs specifically says `page` in most wrappers, but let's confirm the URL.
     const response = await fetch(`${BASE_URL}/api/artists/${id}/songs?page=${page}`);
     if (!response.ok) {
         throw new Error(`Get artist songs failed: ${response.status}`);

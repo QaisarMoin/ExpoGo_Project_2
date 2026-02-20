@@ -1,22 +1,22 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  FlatList,
-  StatusBar,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList, Artist, Song } from '../types';
+import { SongCard } from '../components/SongCard';
 import { getArtistDetails, getArtistSongs, getBestImage, searchSongs } from '../services/api';
 import { usePlayerStore } from '../store/playerStore';
-import { SongCard } from '../components/SongCard';
+import { Artist, RootStackParamList, Song } from '../types';
 
 type ArtistDetailRouteProp = RouteProp<RootStackParamList, 'ArtistDetails'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -136,8 +136,9 @@ export const ArtistDetailScreen: React.FC = () => {
                   return [...prev, ...filtered];
               });
               setPage(nextPage);
-              // Simple check for end of list
-              setHasMore(newSongs.length === 20);
+              // Simple check for end of list: if we got less than requested (usually 10 or 20), we reached the end.
+              // Taking a safer approach: as long as we got SOME songs, we might have more.
+              setHasMore(newSongs.length > 0);
           } else {
               setHasMore(false);
           }
@@ -230,17 +231,22 @@ export const ArtistDetailScreen: React.FC = () => {
                     // isActive={currentSong?.id === item.id} // Optional: Enable if needed (minor perf cost)
                 />
             )}
-            onEndReached={loadMoreSongs}
+            onEndReached={() => {
+                if (hasMore && !loadingMore) {
+                    loadMoreSongs();
+                }
+            }}
             onEndReachedThreshold={0.5}
             // 🔥 PERFORMANCE PROPS
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={5} // Reduce memory usage
-            removeClippedSubviews={true} // Unmount off-screen items
+            initialNumToRender={15}
+            maxToRenderPerBatch={15}
+            windowSize={11} // Recommended default is 21, 11 is a good balance
+            removeClippedSubviews={true} 
+            updateCellsBatchingPeriod={50}
             getItemLayout={(data, index) => (
-                {length: 70, offset: 70 * index, index} // Fixed height optimization
+                {length: 74, offset: 74 * index, index} // Fixed height optimization (approx 74 based on SongCard + padding)
             )}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={styles.listContent}
             ListFooterComponent={loadingMore ? <ActivityIndicator color="#FF6B35" style={{margin: 20}} /> : null}
           />
       )}
@@ -329,5 +335,9 @@ const styles = StyleSheet.create({
       color: '#FF6B35',
       fontWeight: '600',
       fontSize: 16,
+  },
+  listContent: {
+      paddingBottom: 120,
+      flexGrow: 1,
   },
 });
