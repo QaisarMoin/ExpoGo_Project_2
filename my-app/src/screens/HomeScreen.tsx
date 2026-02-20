@@ -1,28 +1,28 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  StatusBar,
-  ScrollView,
-  Image,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { searchSongs, searchArtists, searchAlbums, getBestImage } from '../services/api';
-import { usePlayerStore } from '../store/playerStore';
-import { SongCard } from '../components/SongCard';
-import { ArtistCard } from '../components/ArtistCard';
+import { FlashList } from '@shopify/flash-list';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    FlatList,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlbumCard } from '../components/AlbumCard';
 import { ArtistBottomSheet } from '../components/ArtistBottomSheet';
-import { Song, Artist, Album, RootStackParamList } from '../types';
+import { ArtistCard } from '../components/ArtistCard';
+import { SongCard } from '../components/SongCard';
+import { searchAlbums, searchArtists, searchSongs } from '../services/api';
+import { usePlayerStore } from '../store/playerStore';
+import { Album, Artist, RootStackParamList, Song } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -405,7 +405,6 @@ export const HomeScreen: React.FC = () => {
            <FlashList
              data={artists}
              keyExtractor={(item) => item.id}
-             estimatedItemSize={84}
              ListHeaderComponent={() => (
                  <View style={styles.songsHeader}>
                    <Text style={styles.songsCount}>{artists.length || '0'} artists</Text>
@@ -423,10 +422,6 @@ export const HomeScreen: React.FC = () => {
                          artistId: item.id,
                          initialArtist: item
                      });
-                 }}
-                 onMorePress={() => {
-                     setSelectedArtist(item);
-                     setShowArtistSheet(true);
                  }}
                />
              )}
@@ -469,7 +464,6 @@ export const HomeScreen: React.FC = () => {
           <FlashList
             data={songs}
             keyExtractor={(item) => item.id}
-            estimatedItemSize={80}
             ListHeaderComponent={() => (
               !isSearching && activeTab === 'Songs' ? (
                 <View style={styles.songsHeader}>
@@ -484,7 +478,7 @@ export const HomeScreen: React.FC = () => {
             renderItem={({ item, index }) => (
               <SongCard
                 song={item}
-                onPlay={handlePlay}
+                onPlay={() => handlePlay(item, songs)}
                 isActive={currentSong?.id === item.id}
                 isPlaying={currentSong?.id === item.id && isPlaying}
               />
