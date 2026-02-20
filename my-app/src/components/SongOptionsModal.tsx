@@ -58,8 +58,7 @@ export const SongOptionsModal: React.FC<SongOptionsModalProps> = ({ visible, onC
   };
 
   const handlePlaylistSuccess = () => {
-    navigation.navigate('MainTabs'); 
-    navigation.navigate('Playlists' as any);
+    navigation.navigate('MainTabs', { screen: 'Playlists' } as any);
     onClose();
   };
 
