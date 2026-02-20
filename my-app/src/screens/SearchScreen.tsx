@@ -1,27 +1,28 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  FlatList,
-  Keyboard,
-  StatusBar,
-  Image,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList, Song, Artist, Album } from '../types';
-import { searchSongs, searchArtists, searchAlbums } from '../services/api';
-import { usePlayerStore } from '../store/playerStore';
-import { SongCard } from '../components/SongCard';
-import { ArtistCard } from '../components/ArtistCard';
+import React, { useState } from 'react';
+import {
+    ActivityIndicator,
+    FlatList,
+    Image,
+    Keyboard,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    useColorScheme,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlbumCard } from '../components/AlbumCard';
+import { ArtistCard } from '../components/ArtistCard';
+import { SongCard } from '../components/SongCard';
+import { searchAlbums, searchArtists, searchSongs } from '../services/api';
+import { usePlayerStore } from '../store/playerStore';
+import { Album, Artist, RootStackParamList, Song } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -41,6 +42,8 @@ const RECENT_SEARCHES = [
 export const SearchScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { playSong, currentSong, isPlaying } = usePlayerStore();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
 
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<SearchTab>('Songs');
@@ -157,9 +160,13 @@ export const SearchScreen: React.FC = () => {
       if (isEmpty) {
           return (
               <View style={styles.center}>
-                  <Ionicons name="search-outline" size={64} color="#ddd" />
-                  <Text style={styles.emptyTitle}>Not Found</Text>
-                  <Text style={styles.emptyText}>Try searching for something else.</Text>
+                  <Image 
+                    source={isDarkMode ? require('../../assets/images/black.png') : require('../../assets/images/white.png')} 
+                    style={styles.emptyImage} 
+                    resizeMode="contain"
+                  />
+                  <Text style={[styles.emptyTitle, isDarkMode && { color: '#fff' }]}>Not Found</Text>
+                  <Text style={styles.emptyText}>Sorry, the keyword you entered cannot be found, please check again or search with another keyword.</Text>
               </View>
           );
       }
@@ -190,7 +197,6 @@ export const SearchScreen: React.FC = () => {
                           <ArtistCard
                               artist={item}
                               onPress={() => navigation.navigate('ArtistDetails', { artistId: item.id, initialArtist: item })}
-                              onMorePress={() => {}} // No action needed for search
                           />
                       )}
                       contentContainerStyle={styles.listContent}
@@ -268,6 +274,7 @@ export const SearchScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
       flex: 1,
+      // We will let the container adapt to dark mode if needed later, but the user only explicitly mentioned the Not Found image toggle.
       backgroundColor: '#fff',
   },
   headerContainer: {
@@ -358,9 +365,15 @@ const styles = StyleSheet.create({
   },
   emptyText: {
       marginTop: 8,
-      fontSize: 16,
+      fontSize: 14,
       color: '#888',
       textAlign: 'center',
+      paddingHorizontal: 40,
+  },
+  emptyImage: {
+      width: 250,
+      height: 250,
+      marginBottom: 10,
   },
   listContent: {
       paddingBottom: 100, // Space for mini player
