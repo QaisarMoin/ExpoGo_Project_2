@@ -46,17 +46,16 @@ function AppContent() {
   const showMiniPlayer = isMiniPlayerVisible && currentSong && routeName !== 'Player';
   
   // Adjust bottom position: 
-  // On MainTabs, bottom = TabBarHeight (approx 49) + insets.bottom
-  // On Queue, bottom = 0
+  // On MainTabs, bottom = Tab Bar height (65) + Tab Bar bottom margin (25) = 90
+  // On other screens, bottom = 25 (margin for MiniPlayer as requested)
+  // TabBar padding/insets might behave differently since we forced absolute positioning and height, 
+  // so we'll use exact values matching our MainTabs styles.
   
   const isMainTabs = !routeName || ['Home', 'Favorites', 'Playlists', 'Settings'].includes(routeName);
   
-  // Tab Bar standard height is usually 49. Expo/ReactNav adds padding for safe area.
-  // We want MiniPlayer to sit right above the tab bar content flush.
-  // The tab bar usually extends to the bottom edge.
-  // So we need to lift MiniPlayer by EXACTLY (49 + insets.bottom).
-  
-  const bottomPosition = isMainTabs ? (49 + insets.bottom) : 0;
+  // The tab bar is explicitly 65px tall and sits 25px from the bottom.
+  // Therefore the top of the tab bar is 90px from the bottom.
+  const bottomPosition = isMainTabs ? 90 : 25;
 
   const MyDarkTheme = {
     ...DarkTheme,
@@ -154,11 +153,12 @@ const styles = StyleSheet.create({
   },
   miniPlayerWrapper: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    // Ensure no extra margins are adding gaps
+    left: 15,
+    right: 15,
+    // Provide border radius to match the floating style
+    borderRadius: 16,
+    overflow: 'hidden',
     margin: 0,
-    // marginBottom: 10,
     padding: 0,
   },
 });
