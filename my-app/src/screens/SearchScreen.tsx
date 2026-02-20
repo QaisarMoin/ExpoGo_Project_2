@@ -138,17 +138,17 @@ export const SearchScreen: React.FC = () => {
           return (
               <View style={styles.recentContainer}>
                   <View style={styles.recentHeader}>
-                      <Text style={styles.recentTitle}>Recent Searches</Text>
+                      <Text style={[styles.recentTitle, { color: isDarkMode ? '#fff' : '#1A1A1A' }]}>Recent Searches</Text>
                   </View>
                   {RECENT_SEARCHES.map((term, index) => (
                       <TouchableOpacity 
                         key={index} 
-                        style={styles.recentItem}
+                        style={[styles.recentItem, { borderBottomColor: isDarkMode ? '#333' : '#f9f9f9' }]}
                         onPress={() => handleRecentClick(term)}
                       >
-                          <Ionicons name="time-outline" size={20} color="#888" />
-                          <Text style={styles.recentText}>{term}</Text>
-                          <Ionicons name="arrow-forward-outline" size={16} color="#ccc" style={{marginLeft: 'auto'}} />
+                          <Ionicons name="time-outline" size={20} color={isDarkMode ? '#666' : '#888'} />
+                          <Text style={[styles.recentText, { color: isDarkMode ? '#eee' : '#444' }]}>{term}</Text>
+                          <Ionicons name="arrow-forward-outline" size={16} color={isDarkMode ? '#555' : '#ccc'} style={{marginLeft: 'auto'}} />
                       </TouchableOpacity>
                   ))}
               </View>
@@ -226,15 +226,15 @@ export const SearchScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#fff' }]} edges={['top']}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor={isDarkMode ? '#121212' : '#fff'} />
       
       {/* Search Bar Area */}
-      <View style={styles.headerContainer}>
-          <View style={styles.searchBar}>
+      <View style={[styles.headerContainer, { borderBottomColor: isDarkMode ? '#333' : '#f0f0f0' }]}>
+          <View style={[styles.searchBar, { backgroundColor: isDarkMode ? '#1A1A1A' : '#F5F5F5' }]}>
               <Ionicons name="search" size={20} color="#888" />
               <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: isDarkMode ? '#fff' : '#1A1A1A' }]}
                   placeholder="Search songs, artists, albums..."
                   placeholderTextColor="#aaa"
                   value={query}
@@ -257,10 +257,15 @@ export const SearchScreen: React.FC = () => {
               {TABS.map(tab => (
                   <TouchableOpacity 
                       key={tab} 
-                      style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
+                      style={[
+                        styles.tabButton, 
+                        { backgroundColor: isDarkMode ? '#1A1A1A' : '#F5F5F5' },
+                        activeTab === tab && styles.activeTabButton,
+                        activeTab === tab && isDarkMode && { backgroundColor: 'rgba(255, 107, 53, 0.15)' }
+                      ]}
                       onPress={() => setActiveTab(tab)}
                   >
-                      <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+                      <Text style={[styles.tabText, { color: isDarkMode ? '#aaa' : '#666' }, activeTab === tab && styles.activeTabText]}>{tab}</Text>
                   </TouchableOpacity>
               ))}
           </View>
