@@ -186,6 +186,7 @@ export const SearchScreen: React.FC = () => {
                               onPlay={(s) => playSong(s, [s])} // Simple play single song for now
                               isActive={currentSong?.id === item.id}
                               isPlaying={currentSong?.id === item.id && isPlaying}
+                              isDarkMode={isDarkMode}
                           />
                       )}
                       contentContainerStyle={styles.listContent}
@@ -200,6 +201,7 @@ export const SearchScreen: React.FC = () => {
                           <ArtistCard
                               artist={item}
                               onPress={() => navigation.navigate('ArtistDetails', { artistId: item.id, initialArtist: item })}
+                              isDarkMode={isDarkMode}
                           />
                       )}
                       contentContainerStyle={styles.listContent}
@@ -216,6 +218,7 @@ export const SearchScreen: React.FC = () => {
                           <AlbumCard
                               album={item}
                               onPress={() => navigation.navigate('AlbumDetails', { albumId: item.id })}
+                              isDarkMode={isDarkMode}
                           />
                       )}
                       contentContainerStyle={[styles.listContent, { paddingHorizontal: 16 }]}
@@ -236,7 +239,7 @@ export const SearchScreen: React.FC = () => {
               <TextInput
                   style={[styles.input, { color: isDarkMode ? '#fff' : '#1A1A1A' }]}
                   placeholder="Search songs, artists, albums..."
-                  placeholderTextColor="#aaa"
+                  placeholderTextColor={isDarkMode ? '#888' : '#aaa'}
                   value={query}
                   onChangeText={setQuery}
                   onSubmitEditing={() => handleSearch(query)}

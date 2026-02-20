@@ -29,7 +29,7 @@ export const ArtistCard = React.memo<ArtistCardProps>(({
 
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor: isDarkMode ? '#1A1A1A' : '#fff' }]}
+      style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#fff' }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -39,10 +39,10 @@ export const ArtistCard = React.memo<ArtistCardProps>(({
           style={styles.image} 
         />
         <View style={styles.info}>
-          <Text style={[styles.name, { color: isDarkMode ? '#fff' : '#1A1A1A' }]} numberOfLines={1}>
+          <Text style={[styles.name, { color: isDarkMode ? '#ffffff' : '#1A1A1A' }]} numberOfLines={1}>
             {artist.name}
           </Text>
-          <Text style={[styles.role, { color: isDarkMode ? '#aaa' : '#888' }]} numberOfLines={1}>
+          <Text style={[styles.role, { color: isDarkMode ? '#aaaaaa' : '#888' }]} numberOfLines={1}>
             Artist
           </Text>
         </View>

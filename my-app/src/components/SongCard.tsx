@@ -49,15 +49,14 @@ export const SongCard = React.memo<SongCardProps>(({
   const isCurrentlyPlaying = queue[currentIndex]?.id === song.id;
   const isPlayNext = queue.length > 0 && currentIndex + 1 < queue.length && queue[currentIndex + 1]?.id === song.id;
 
-  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
-  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
-  const subTextColor = isDarkMode ? '#aaa' : '#888';
+  const bgColor = isDarkMode ? '#121212' : '#fff';
+  const textColor = isDarkMode ? '#ffffff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaaaaa' : '#888';
 
   return (
     <View style={[
       styles.container, 
-      { backgroundColor: bgColor },
-      isActive && styles.activeContainer,
+      { backgroundColor: isActive ? (isDarkMode ? '#2A1A14' : '#FFF5F1') : bgColor },
       isCurrentlyPlaying && (isDarkMode ? styles.playingContainerDark : styles.playingContainer),
       isPlayNext && (isDarkMode ? styles.playNextContainerDark : styles.playNextContainer),
     ]}>

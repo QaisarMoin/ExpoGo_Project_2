@@ -1,21 +1,22 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  StatusBar,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { usePlayerStore } from '../store/playerStore';
+import React from 'react';
+import {
+    Alert,
+    FlatList,
+    Image,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getBestImage } from '../services/api';
-import { getArtistName, formatDuration } from '../utils/helpers';
+import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore } from '../store/themeStore';
 import { Song } from '../types';
+import { formatDuration, getArtistName } from '../utils/helpers';
 
 export const QueueScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -28,6 +29,13 @@ export const QueueScreen: React.FC = () => {
     removeFromQueue,
     reorderQueue,
   } = usePlayerStore();
+  const { isDarkMode } = useThemeStore();
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
+  const borderColor = isDarkMode ? '#333' : '#F5F5F5';
+  const activeRowBg = isDarkMode ? '#2A1A14' : '#FFF5F1';
 
   const handlePlay = async (song: Song, index: number) => {
     await playSong(song, queue);
@@ -63,7 +71,7 @@ export const QueueScreen: React.FC = () => {
     const isActive = currentSong?.id === item.id;
 
     return (
-      <View style={[styles.songRow, isActive && styles.activeSongRow]}>
+      <View style={[styles.songRow, { backgroundColor: bgColor }, isActive && { backgroundColor: activeRowBg }]}>
         <TouchableOpacity
           style={styles.songLeft}
           onPress={() => handlePlay(item, index)}
@@ -77,10 +85,10 @@ export const QueueScreen: React.FC = () => {
             </View>
           )}
           <View style={styles.songInfo}>
-            <Text style={[styles.songName, isActive && styles.activeSongName]} numberOfLines={1}>
+            <Text style={[styles.songName, { color: textColor }, isActive && styles.activeSongName]} numberOfLines={1}>
               {item.name}
             </Text>
-            <Text style={styles.songArtist} numberOfLines={1}>
+            <Text style={[styles.songArtist, { color: subTextColor }]} numberOfLines={1}>
               {artist} · {formatDuration(item.duration)}
             </Text>
           </View>
@@ -122,24 +130,24 @@ export const QueueScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: bgColor }]}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor={bgColor} />
+      <View style={[styles.container, { backgroundColor: bgColor }]}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: borderColor }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+            <Ionicons name="arrow-back" size={24} color={textColor} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Queue</Text>
-          <Text style={styles.headerCount}>{queue.length} songs</Text>
+          <Text style={[styles.headerTitle, { color: textColor }]}>Queue</Text>
+          <Text style={[styles.headerCount, { color: subTextColor }]}>{queue.length} songs</Text>
         </View>
 
         {/* Empty State */}
         {queue.length === 0 && (
           <View style={styles.emptyContainer}>
             <Ionicons name="list-outline" size={72} color="#FF6B35" />
-            <Text style={styles.emptyTitle}>Queue is empty</Text>
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyTitle, { color: textColor }]}>Queue is empty</Text>
+            <Text style={[styles.emptyText, { color: subTextColor }]}>
               Play a song to add it to your queue
             </Text>
             <TouchableOpacity
@@ -158,7 +166,7 @@ export const QueueScreen: React.FC = () => {
             keyExtractor={(item, index) => `${item.id}-${index}`}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: borderColor }]} />}
             contentContainerStyle={[styles.listContent, { paddingBottom: 90 }]}
           />
         )}
@@ -170,11 +178,9 @@ export const QueueScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -182,7 +188,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
   },
   backBtn: {
     marginRight: 12,
@@ -192,11 +197,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A1A1A',
   },
   headerCount: {
     fontSize: 13,
-    color: '#888',
   },
   listContent: {
     paddingBottom: 16,
@@ -206,10 +209,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#fff',
   },
   activeSongRow: {
-    backgroundColor: '#FFF5F1',
   },
   songLeft: {
     flex: 1,
@@ -234,7 +235,6 @@ const styles = StyleSheet.create({
   songName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
     marginBottom: 3,
   },
   activeSongName: {
@@ -242,7 +242,6 @@ const styles = StyleSheet.create({
   },
   songArtist: {
     fontSize: 12,
-    color: '#888',
   },
   playingIndicator: {
     marginRight: 8,
@@ -257,7 +256,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: '#F5F5F5',
     marginLeft: 76,
   },
   emptyContainer: {
@@ -270,11 +268,9 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A1A1A',
   },
   emptyText: {
     fontSize: 14,
-    color: '#888',
     textAlign: 'center',
   },
   goHomeBtn: {

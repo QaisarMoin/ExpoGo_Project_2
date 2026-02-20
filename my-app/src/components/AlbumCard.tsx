@@ -22,7 +22,7 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, onPress, isDarkMode
       style={[
         styles.container, 
         { 
-          backgroundColor: isDarkMode ? '#2A2A2A' : '#fff',
+          backgroundColor: isDarkMode ? '#121212' : '#fff',
           shadowColor: isDarkMode ? 'transparent' : '#000', 
         }
       ]} 
@@ -34,8 +34,8 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, onPress, isDarkMode
         style={styles.image} 
       />
       <View style={styles.info}>
-        <Text style={[styles.name, { color: isDarkMode ? '#fff' : '#1A1A1A' }]} numberOfLines={1}>{album.name}</Text>
-        <Text style={[styles.artist, { color: isDarkMode ? '#aaa' : '#666' }]} numberOfLines={1}>
+        <Text style={[styles.name, { color: isDarkMode ? '#ffffff' : '#1A1A1A' }]} numberOfLines={1}>{album.name}</Text>
+        <Text style={[styles.artist, { color: isDarkMode ? '#aaaaaa' : '#666' }]} numberOfLines={1}>
           {artistName} {album.year ? `• ${album.year}` : ''}
         </Text>
       </View>

@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
     right: 0,
     // Ensure no extra margins are adding gaps
     margin: 0,
+    // marginBottom: 10,
     padding: 0,
   },
 });
