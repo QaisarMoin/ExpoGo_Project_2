@@ -15,19 +15,21 @@ interface ArtistCardProps {
   artist: Artist;
   onPress: () => void;
   playlistId?: string; // Add this to allow passing playlistId context
+  isDarkMode?: boolean;
 }
 
 export const ArtistCard = React.memo<ArtistCardProps>(({
   artist,
   onPress,
   playlistId,
+  isDarkMode = false,
 }) => {
   const [modalVisible, setModalVisible] = React.useState(false);
   const imageUrl = getBestImage(artist.image);
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, { backgroundColor: isDarkMode ? '#1A1A1A' : '#fff' }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -37,10 +39,10 @@ export const ArtistCard = React.memo<ArtistCardProps>(({
           style={styles.image} 
         />
         <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>
+          <Text style={[styles.name, { color: isDarkMode ? '#fff' : '#1A1A1A' }]} numberOfLines={1}>
             {artist.name}
           </Text>
-          <Text style={styles.role} numberOfLines={1}>
+          <Text style={[styles.role, { color: isDarkMode ? '#aaa' : '#888' }]} numberOfLines={1}>
             Artist
           </Text>
         </View>
@@ -66,7 +68,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
   },
   leftSection: {
     flexDirection: 'row',
@@ -88,12 +89,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A1A1A',
     marginBottom: 4,
   },
   role: {
     fontSize: 13,
-    color: '#888',
   },
   moreBtn: {
     padding: 8,

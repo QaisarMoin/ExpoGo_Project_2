@@ -1,19 +1,19 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  TouchableWithoutFeedback,
-  ActivityIndicator,
-  FlatList,
+    ActivityIndicator,
+    Image,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Artist, Song } from '../types';
-import { searchSongs, getBestImage } from '../services/api';
+import { getBestImage, searchSongs } from '../services/api';
 import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore } from '../store/themeStore';
+import { Artist, Song } from '../types';
 
 interface ArtistBottomSheetProps {
   visible: boolean;
@@ -27,8 +27,15 @@ export const ArtistBottomSheet: React.FC<ArtistBottomSheetProps> = ({
   artist,
 }) => {
   const { playSong, addToQueue, enqueueNext } = usePlayerStore();
+  const { isDarkMode } = useThemeStore();
   const [loading, setLoading] = useState(false);
   const [topSongs, setTopSongs] = useState<Song[]>([]);
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
+  const dragHandleColor = isDarkMode ? '#444' : '#E0E0E0';
+  const iconColor = isDarkMode ? '#fff' : '#1A1A1A';
 
   useEffect(() => {
     if (visible && artist) {
@@ -88,18 +95,18 @@ export const ArtistBottomSheet: React.FC<ArtistBottomSheetProps> = ({
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
             <TouchableWithoutFeedback>
-                <View style={styles.sheet}>
+                <View style={[styles.sheet, { backgroundColor: bgColor }]}>
                     {/* Handle Bar */}
                     <View style={styles.handleContainer}>
-                        <View style={styles.handle} />
+                        <View style={[styles.handle, { backgroundColor: dragHandleColor }]} />
                     </View>
 
                     {/* Artist Header */}
                     <View style={styles.header}>
                         <Image source={{ uri: imageUrl || 'https://via.placeholder.com/80' }} style={styles.image} />
                         <View style={styles.headerInfo}>
-                            <Text style={styles.name}>{artist.name}</Text>
-                            <Text style={styles.role}>{artist.role} • {topSongs.length} Tracks loaded</Text>
+                            <Text style={[styles.name, { color: textColor }]}>{artist.name}</Text>
+                            <Text style={[styles.role, { color: subTextColor }]}>{artist.role} • {topSongs.length} Tracks loaded</Text>
                         </View>
                     </View>
 
@@ -107,7 +114,7 @@ export const ArtistBottomSheet: React.FC<ArtistBottomSheetProps> = ({
                     {loading && (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator color="#FF6B35" />
-                            <Text style={styles.loadingText}>Loading top songs...</Text>
+                            <Text style={[styles.loadingText, { color: subTextColor }]}>Loading top songs...</Text>
                         </View>
                     )}
 
@@ -118,35 +125,35 @@ export const ArtistBottomSheet: React.FC<ArtistBottomSheetProps> = ({
                                 <View style={styles.iconCircle}>
                                     <Ionicons name="play" size={24} color="#FF6B35" />
                                 </View>
-                                <Text style={styles.actionText}>Play</Text>
+                                <Text style={[styles.actionText, { color: textColor }]}>Play</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.actionRow} onPress={handlePlayNext}>
                                 <View style={styles.iconCircle}>
-                                    <Ionicons name="return-down-forward" size={24} color="#1A1A1A" />
+                                    <Ionicons name="return-down-forward" size={24} color={iconColor} />
                                 </View>
-                                <Text style={styles.actionText}>Play Next</Text>
+                                <Text style={[styles.actionText, { color: textColor }]}>Play Next</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.actionRow} onPress={handleAddToQueue}>
                                 <View style={styles.iconCircle}>
-                                    <Ionicons name="list" size={24} color="#1A1A1A" />
+                                    <Ionicons name="list" size={24} color={iconColor} />
                                 </View>
-                                <Text style={styles.actionText}>Add to Playing Queue</Text>
+                                <Text style={[styles.actionText, { color: textColor }]}>Add to Playing Queue</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.actionRow} onPress={() => onClose()}>
                                 <View style={styles.iconCircle}>
-                                    <Ionicons name="add-circle-outline" size={24} color="#1A1A1A" />
+                                    <Ionicons name="add-circle-outline" size={24} color={iconColor} />
                                 </View>
-                                <Text style={styles.actionText}>Add to Playlist</Text>
+                                <Text style={[styles.actionText, { color: textColor }]}>Add to Playlist</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.actionRow} onPress={onClose}>
                                 <View style={styles.iconCircle}>
-                                    <Ionicons name="share-social" size={24} color="#1A1A1A" />
+                                    <Ionicons name="share-social" size={24} color={iconColor} />
                                 </View>
-                                <Text style={styles.actionText}>Share</Text>
+                                <Text style={[styles.actionText, { color: textColor }]}>Share</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -154,7 +161,7 @@ export const ArtistBottomSheet: React.FC<ArtistBottomSheetProps> = ({
                     {/* Empty/Error State */}
                     {!loading && topSongs.length === 0 && (
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyText}>No songs found for this artist.</Text>
+                            <Text style={[styles.emptyText, { color: subTextColor }]}>No songs found for this artist.</Text>
                         </View>
                     )}
                 </View>
@@ -172,7 +179,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 40,
@@ -185,7 +191,6 @@ const styles = StyleSheet.create({
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: '#E0E0E0',
     borderRadius: 2,
   },
   header: {
@@ -207,12 +212,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A1A1A',
     marginBottom: 4,
   },
   role: {
     fontSize: 14,
-    color: '#888',
   },
   loadingContainer: {
     padding: 24,
@@ -220,7 +223,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 8,
-    color: '#888',
   },
   actions: {
     paddingHorizontal: 24,
@@ -240,13 +242,11 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1A1A1A',
   },
   emptyState: {
       padding: 24,
       alignItems: 'center',
   },
   emptyText: {
-      color: '#888',
   },
 });

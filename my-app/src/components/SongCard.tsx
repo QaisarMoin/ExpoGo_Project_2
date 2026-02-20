@@ -22,6 +22,7 @@ interface SongCardProps {
   showIndex?: boolean;
   index?: number;
   playlistId?: string; // Optional: To indicate this song card is viewed inside a specific playlist
+  isDarkMode?: boolean;
 }
 
 export const SongCard = React.memo<SongCardProps>(({
@@ -32,6 +33,7 @@ export const SongCard = React.memo<SongCardProps>(({
   showIndex = false,
   index,
   playlistId,
+  isDarkMode = false,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const imageUrl = getBestImage(song.image);
@@ -47,12 +49,17 @@ export const SongCard = React.memo<SongCardProps>(({
   const isCurrentlyPlaying = queue[currentIndex]?.id === song.id;
   const isPlayNext = queue.length > 0 && currentIndex + 1 < queue.length && queue[currentIndex + 1]?.id === song.id;
 
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
+
   return (
     <View style={[
       styles.container, 
+      { backgroundColor: bgColor },
       isActive && styles.activeContainer,
-      isCurrentlyPlaying && styles.playingContainer,
-      isPlayNext && styles.playNextContainer,
+      isCurrentlyPlaying && (isDarkMode ? styles.playingContainerDark : styles.playingContainer),
+      isPlayNext && (isDarkMode ? styles.playNextContainerDark : styles.playNextContainer),
     ]}>
         <TouchableOpacity 
             style={styles.mainClick} 
@@ -70,10 +77,10 @@ export const SongCard = React.memo<SongCardProps>(({
                 />
                 </View>
                 <View style={styles.info}>
-                <Text style={[styles.name, isActive && styles.activeName]} numberOfLines={1}>
+                <Text style={[styles.name, { color: textColor }, isActive && styles.activeName]} numberOfLines={1}>
                     {song.name}
                 </Text>
-                <Text style={styles.artist} numberOfLines={1}>
+                <Text style={[styles.artist, { color: subTextColor }]} numberOfLines={1}>
                     {artist} | {duration} mins
                 </Text>
                 </View>
@@ -107,7 +114,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
   },
   activeContainer: {
     backgroundColor: '#FFF5F1',
@@ -115,8 +121,14 @@ const styles = StyleSheet.create({
   playingContainer: {
     backgroundColor: 'rgba(255, 107, 53, 0.1)', // Light orange transparent
   },
+  playingContainerDark: {
+    backgroundColor: 'rgba(255, 107, 53, 0.2)', // Slightly more visible on dark
+  },
   playNextContainer: {
     backgroundColor: 'rgba(76, 175, 80, 0.1)', // Light green transparent
+  },
+  playNextContainerDark: {
+    backgroundColor: 'rgba(76, 175, 80, 0.2)', 
   },
   mainClick: {
       flex: 1,
@@ -151,7 +163,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1A1A1A',
     marginBottom: 4,
   },
   activeName: {
@@ -159,7 +170,6 @@ const styles = StyleSheet.create({
   },
   artist: {
     fontSize: 12,
-    color: '#888',
   },
   rightSection: {
     flexDirection: 'row',

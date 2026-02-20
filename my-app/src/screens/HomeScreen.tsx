@@ -11,9 +11,8 @@ import {
     StatusBar,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlbumCard } from '../components/AlbumCard';
@@ -22,6 +21,7 @@ import { ArtistCard } from '../components/ArtistCard';
 import { SongCard } from '../components/SongCard';
 import { searchAlbums, searchArtists, searchSongs } from '../services/api';
 import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore } from '../store/themeStore';
 import { Album, Artist, RootStackParamList, Song } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -29,39 +29,40 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const TABS = ['Suggested', 'Songs', 'Artists', 'Albums'];
 
 // Mock data helpers or derived from API
-const SectionHeader = ({ title, onPress }: { title: string; onPress?: () => void }) => (
+const SectionHeader = ({ title, onPress, textColor }: { title: string; onPress?: () => void; textColor: string }) => (
   <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
+    <Text style={[styles.sectionTitle, { color: textColor }]}>{title}</Text>
     <TouchableOpacity onPress={onPress}>
       <Text style={styles.seeAllText}>See All</Text>
     </TouchableOpacity>
   </View>
 );
 
-const HorizontalCard = ({ item, onPress }: { item: Song; onPress: () => void }) => (
+const HorizontalCard = ({ item, onPress, textColor, subTextColor }: { item: Song; onPress: () => void; textColor: string; subTextColor: string }) => (
   <TouchableOpacity style={styles.horizontalCard} onPress={onPress}>
     <Image 
       source={{ uri: item.image && item.image.length > 0 ? item.image[item.image.length - 1]?.url : 'https://via.placeholder.com/140' }} 
       style={styles.cardImage} 
     />
-    <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
-    <Text style={styles.cardSubtitle} numberOfLines={1}>{item.primaryArtists || 'Unknown Artist'}</Text>
+    <Text style={[styles.cardTitle, { color: textColor }]} numberOfLines={1}>{item.name}</Text>
+    <Text style={[styles.cardSubtitle, { color: subTextColor }]} numberOfLines={1}>{item.primaryArtists || 'Unknown Artist'}</Text>
   </TouchableOpacity>
 );
 
-const ArtistCircle = ({ name, image, onPress }: { name: string; image: string; onPress: () => void }) => (
+const ArtistCircle = ({ name, image, onPress, textColor }: { name: string; image: string; onPress: () => void; textColor: string }) => (
   <TouchableOpacity style={styles.artistContainer} onPress={onPress}>
     <Image source={{ uri: image }} style={styles.artistImage} />
-    <Text style={styles.artistName} numberOfLines={1}>{name}</Text>
+    <Text style={[styles.artistName, { color: textColor }]} numberOfLines={1}>{name}</Text>
   </TouchableOpacity>
 );
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { playSong, currentSong, isPlaying } = usePlayerStore();
+  const { isDarkMode } = useThemeStore();
 
   const [activeTab, setActiveTab] = useState('Suggested');
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(''); // This 'query' is for the search bar that is now removed.
   const [songs, setSongs] = useState<Song[]>([]);
   const [suggestedSongs, setSuggestedSongs] = useState<Song[]>([]);
   const [recentData, setRecentData] = useState<Song[]>([]);
@@ -72,7 +73,7 @@ export const HomeScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState(''); // This 'searchText' is for the search bar that is now removed.
 
   // Artists State
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -87,7 +88,7 @@ export const HomeScreen: React.FC = () => {
   const [hasMoreAlbums, setHasMoreAlbums] = useState(true);
   const [albumLoading, setAlbumLoading] = useState(false);
 
-  const [isSearching, setIsSearching] = useState(false);
+  // isSearching state is removed as search is moved to a separate screen.
 
   // Initial fetch for Suggested Content
   useEffect(() => {
@@ -96,16 +97,17 @@ export const HomeScreen: React.FC = () => {
 
   // Effect to handle tab changes
   useEffect(() => {
-    if (activeTab === 'Songs' && songs.length === 0 && !searchText) {
+    if (activeTab === 'Songs' && songs.length === 0) { // Removed !searchText condition
        fetchSongs('latest', 1);
-    } else if (activeTab === 'Artists' && artists.length === 0 && !searchText) {
+    } else if (activeTab === 'Artists' && artists.length === 0) { // Removed !searchText condition
        fetchDefaultArtists(1);
-    } else if (activeTab === 'Albums' && albums.length === 0 && !searchText) {
+    } else if (activeTab === 'Albums' && albums.length === 0) { // Removed !searchText condition
        fetchAlbums('arijit', 1); // User requested default query 'arijit'
     }
   }, [activeTab]);
 
   const loadSuggestedContent = async () => {
+    setLoading(true);
     try {
       // Fetch diverse data to populate the distinct sections
       // Recently Played (Simulated with 'Latest' or 'Trending')
@@ -121,6 +123,8 @@ export const HomeScreen: React.FC = () => {
       setMostPlayedData(mostPlayedRes.songs);
     } catch (e) {
       console.log('Failed to load suggested', e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -261,35 +265,24 @@ export const HomeScreen: React.FC = () => {
       }
   }, [albumLoading]);
 
-  const handleSearch = () => {
-    if (!query.trim()) return;
-    setPage(1);
-    setHasMore(true);
-    fetchSongs(query, 1);
-    setSearchText(query);
-    setActiveTab('Songs'); // Switch to songs view on search
-  };
+  // handleSearch is removed as search is moved to a separate screen.
 
   const handleLoadMore = () => {
     if (loadingMore || loading) return;
     
     if (activeTab === 'Songs' && hasMore) {
         setPage(prev => prev + 1);
-        fetchSongs(searchText || 'latest', page + 1, true);
+        fetchSongs('latest', page + 1, true); // Removed searchText
     } else if (activeTab === 'Artists' && hasMoreArtists) {
         const nextPage = artistPage + 1;
         setArtistPage(nextPage);
         
-        if (searchText) {
-            fetchArtists(searchText, nextPage, true);
-        } else {
-            // Infinite scroll for default list
-            fetchDefaultArtists(nextPage);
-        }
+        // Removed searchText condition
+        fetchDefaultArtists(nextPage);
     } else if (activeTab === 'Albums' && hasMoreAlbums) {
         const nextPage = albumPage + 1;
         setAlbumPage(nextPage);
-        fetchAlbums(searchText || 'arijit', nextPage, true);
+        fetchAlbums('arijit', nextPage, true); // Removed searchText
     }
   };
 
@@ -297,6 +290,30 @@ export const HomeScreen: React.FC = () => {
     await playSong(song, list.length ? list : [song]);
     navigation.navigate('Player');
   }, [playSong, navigation]);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#ccc' : '#888';
+  const separatorColor = isDarkMode ? '#333' : '#F5F5F5';
+  const searchBgColor = isDarkMode ? '#333' : '#F5F5F5';
+
+  if (loading && activeTab === 'Suggested') { // Only show full screen loader for initial suggested content
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: bgColor }]}>
+        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={bgColor} />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const renderSuggestedView = () => {
     return (
@@ -308,19 +325,21 @@ export const HomeScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Recently Played Section */}
-        <SectionHeader title="Recently Played" onPress={() => setActiveTab('Songs')} />
+        <SectionHeader title="Recently Played" onPress={() => setActiveTab('Songs')} textColor={textColor} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
           {recentData.map(song => (
             <HorizontalCard 
               key={song.id} 
               item={song} 
               onPress={() => handlePlay(song, recentData)} 
+              textColor={textColor}
+              subTextColor={subTextColor}
             />
           ))}
         </ScrollView>
 
         {/* Artists Section */}
-        <SectionHeader title="Artists" onPress={() => setActiveTab('Artists')} />
+        <SectionHeader title="Artists" onPress={() => setActiveTab('Artists')} textColor={textColor} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
           {artistData.map(song => (
             <ArtistCircle 
@@ -328,18 +347,21 @@ export const HomeScreen: React.FC = () => {
               name={(song.primaryArtists || song.name).split(',')[0]} 
               image={song.image && song.image.length > 0 ? song.image[song.image.length - 1]?.url : 'https://via.placeholder.com/100'} 
               onPress={() => navigation.navigate('ArtistDetails', { artistId: song.artists?.primary?.[0]?.id || song.id, initialArtist: { id: song.id, name: song.primaryArtists, url: '', image: song.image, type: 'artist', role: 'music' } })} 
+              textColor={textColor}
             />
           ))}
         </ScrollView>
 
         {/* Most Played Section */}
-        <SectionHeader title="Most Played" onPress={() => setActiveTab('Songs')} />
+        <SectionHeader title="Most Played" onPress={() => setActiveTab('Songs')} textColor={textColor} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
           {mostPlayedData.map(song => (
             <HorizontalCard 
               key={song.id} 
               item={song} 
               onPress={() => handlePlay(song, mostPlayedData)} 
+              textColor={textColor}
+              subTextColor={subTextColor}
             />
           ))}
         </ScrollView>
@@ -348,17 +370,14 @@ export const HomeScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: bgColor }]} edges={['top']}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={bgColor} />
+      <View style={[styles.container, { backgroundColor: bgColor }]}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.logoRow}>
-            <Ionicons name="musical-notes" size={28} color="#FF6B35" />
-            <Text style={styles.logoText}>Mume</Text>
-          </View>
-          <TouchableOpacity style={styles.searchIconBtn} onPress={() => navigation.navigate('Search' as any)}>
-            <Ionicons name="search" size={24} color="#1A1A1A" />
+          <Text style={[styles.greeting, { color: textColor }]}>{getGreeting()}</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Search' as any)}>
+            <Ionicons name="search" size={24} color={textColor} />
           </TouchableOpacity>
         </View>
 
@@ -371,7 +390,7 @@ export const HomeScreen: React.FC = () => {
                 style={[styles.tabItem, activeTab === tab && styles.activeTabItem]}
                 onPress={() => setActiveTab(tab)}
               >
-                <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                <Text style={[styles.tabText, activeTab === tab && { color: '#FF6B35' }, { color: activeTab !== tab ? subTextColor : undefined }]}>
                   {tab}
                 </Text>
                 {activeTab === tab && <View style={styles.activeIndicator} />}
@@ -380,34 +399,18 @@ export const HomeScreen: React.FC = () => {
           </ScrollView>
         </View>
 
-        {/* Search Bar - Toggle visibility */}
-        {isSearching && (
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={18} color="#888" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search songs, artists..."
-              placeholderTextColor="#aaa"
-              value={query}
-              onChangeText={setQuery}
-              onSubmitEditing={handleSearch}
-              returnKeyType="search"
-              autoFocus
-            />
-          </View>
-        )}
-
+        {/* Search Bar - Toggle visibility (Removed as search is moved to a separate screen) */}
         {/* Content Switcher */}
-        {!isSearching && activeTab === 'Suggested' ? (
+        {activeTab === 'Suggested' ? (
           renderSuggestedView()
-        ) : !isSearching && activeTab === 'Artists' ? (
+        ) : activeTab === 'Artists' ? (
            /* Artists List */
            <FlashList
              data={artists}
              keyExtractor={(item) => item.id}
              ListHeaderComponent={() => (
                  <View style={styles.songsHeader}>
-                   <Text style={styles.songsCount}>{artists.length || '0'} artists</Text>
+                   <Text style={[styles.songsCount, { color: textColor }]}>{artists.length || '0'} artists</Text>
                    <TouchableOpacity style={styles.sortBtn}>
                      <Text style={styles.sortText}>Date Added</Text>
                      <Ionicons name="swap-vertical" size={16} color="#FF6B35" />
@@ -423,6 +426,7 @@ export const HomeScreen: React.FC = () => {
                          initialArtist: item
                      });
                  }}
+                 isDarkMode={isDarkMode}
                />
              )}
              onEndReached={handleLoadMore}
@@ -431,11 +435,11 @@ export const HomeScreen: React.FC = () => {
              contentContainerStyle={{
                paddingBottom: currentSong ? 160 : 100,
              }}
-             ListEmptyComponent={artists.length === 0 ? <View style={styles.emptyList} /> : null}
+             ListEmptyComponent={artists.length === 0 && !loading ? <View style={styles.emptyList}><Text style={{textAlign: 'center', color: subTextColor}}>No artists found</Text></View> : null}
              ListFooterComponent={loadingMore ? <ActivityIndicator color="#FF6B35" /> : null}
-             ItemSeparatorComponent={() => <View style={styles.separator} />}
+             ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: separatorColor }]} />}
            />
-        ) : !isSearching && activeTab === 'Albums' ? (
+        ) : activeTab === 'Albums' ? (
           <FlatList
             data={albums}
             keyExtractor={(item) => item.id}
@@ -445,6 +449,7 @@ export const HomeScreen: React.FC = () => {
               <AlbumCard 
                 album={item} 
                 onPress={(album) => navigation.navigate('AlbumDetails', { albumId: album.id })} 
+                isDarkMode={isDarkMode}
               />
             )}
             style={{flex: 1}}
@@ -457,7 +462,7 @@ export const HomeScreen: React.FC = () => {
             windowSize={5}
             removeClippedSubviews={true}
             ListFooterComponent={albumLoading && albumPage > 1 ? <ActivityIndicator color="#FF6B35" style={{margin: 20}} /> : null}
-            ListEmptyComponent={!albumLoading ? <View style={{padding: 20}}><Text style={{textAlign: 'center', color: '#888'}}>No albums found</Text></View> : null}
+            ListEmptyComponent={!albumLoading && albums.length === 0 ? <View style={{padding: 20}}><Text style={{textAlign: 'center', color: subTextColor}}>No albums found</Text></View> : null}
           />
         ) : (
           /* Search/Songs Results List */
@@ -465,9 +470,9 @@ export const HomeScreen: React.FC = () => {
             data={songs}
             keyExtractor={(item) => item.id}
             ListHeaderComponent={() => (
-              !isSearching && activeTab === 'Songs' ? (
+              activeTab === 'Songs' ? (
                 <View style={styles.songsHeader}>
-                  <Text style={styles.songsCount}>{songs.length || '0'} songs</Text>
+                  <Text style={[styles.songsCount, { color: textColor }]}>{songs.length || '0'} songs</Text>
                   <TouchableOpacity style={styles.sortBtn}>
                     <Text style={styles.sortText}>Ascending</Text>
                     <Ionicons name="swap-vertical" size={16} color="#FF6B35" />
@@ -481,6 +486,7 @@ export const HomeScreen: React.FC = () => {
                 onPlay={() => handlePlay(item, songs)}
                 isActive={currentSong?.id === item.id}
                 isPlaying={currentSong?.id === item.id && isPlaying}
+                isDarkMode={isDarkMode}
               />
             )}
             onEndReached={handleLoadMore}
@@ -489,9 +495,9 @@ export const HomeScreen: React.FC = () => {
             contentContainerStyle={{
               paddingBottom: currentSong ? 160 : 100,
             }}
-            ListEmptyComponent={songs.length === 0 ? <View style={styles.emptyList} /> : null}
+            ListEmptyComponent={songs.length === 0 && !loading ? <View style={styles.emptyList}><Text style={{textAlign: 'center', color: subTextColor}}>No songs found</Text></View> : null}
             ListFooterComponent={loadingMore ? <ActivityIndicator color="#FF6B35" /> : null}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: separatorColor }]} />}
           />
         )}
         
@@ -508,11 +514,14 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -521,37 +530,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
   },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logoText: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#1A1A1A',
-  },
-  searchIconBtn: {
-    padding: 4,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: '#1A1A1A',
-    padding: 0,
+  greeting: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   tabsContainer: {
     marginBottom: 16,
@@ -568,12 +549,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 16,
-    color: '#888',
     fontWeight: '500',
-  },
-  activeTabText: {
-    color: '#FF6B35',
-    fontWeight: '700',
   },
   activeIndicator: {
     height: 3,
@@ -596,7 +572,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A1A1A',
   },
   seeAllText: {
     fontSize: 14,
@@ -622,12 +597,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1A1A1A',
     marginBottom: 4,
   },
   cardSubtitle: {
     fontSize: 12,
-    color: '#888',
   },
   artistContainer: {
     alignItems: 'center',
@@ -643,15 +616,16 @@ const styles = StyleSheet.create({
   artistName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
     textAlign: 'center',
   },
   emptyList: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
   },
   separator: {
     height: 1,
-    backgroundColor: '#F5F5F5',
     marginLeft: 16, // Adjusted separator margin
   },
   songsHeader: {
@@ -664,7 +638,6 @@ const styles = StyleSheet.create({
   songsCount: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1A1A1A',
   },
   sortBtn: {
     flexDirection: 'row',

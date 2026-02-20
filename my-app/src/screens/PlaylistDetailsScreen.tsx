@@ -8,6 +8,7 @@ import { ArtistCard } from '../components/ArtistCard';
 import { SongCard } from '../components/SongCard';
 import { usePlayerStore } from '../store/playerStore';
 import { usePlaylistStore } from '../store/playlistStore';
+import { useThemeStore } from '../store/themeStore';
 import { RootStackParamList } from '../types';
 
 type PlaylistDetailsRouteProp = RouteProp<RootStackParamList, 'PlaylistDetails'>;
@@ -21,15 +22,22 @@ export const PlaylistDetailsScreen = () => {
   const { playlists } = usePlaylistStore();
   const playlist = playlists.find(p => p.id === playlistId);
   const playSong = usePlayerStore(state => state.playSong);
+  const { isDarkMode } = useThemeStore();
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
+  const borderColor = isDarkMode ? '#333' : '#F0F0F0';
+  const iconBg = isDarkMode ? 'rgba(255, 107, 53, 0.2)' : 'rgba(255, 107, 53, 0.1)';
 
   if (!playlist) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+      <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+        <View style={[styles.header, { borderBottomColor: borderColor }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+            <Ionicons name="arrow-back" size={24} color={textColor} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Playlist Not Found</Text>
+          <Text style={[styles.headerTitle, { color: textColor }]}>Playlist Not Found</Text>
         </View>
       </SafeAreaView>
     );
@@ -54,20 +62,20 @@ export const PlaylistDetailsScreen = () => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          <Ionicons name="arrow-back" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{playlist.name}</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]} numberOfLines={1}>{playlist.name}</Text>
       </View>
 
-      <View style={styles.infoSection}>
-        <View style={styles.iconContainer}>
+      <View style={[styles.infoSection, { borderBottomColor: borderColor }]}>
+        <View style={[styles.iconContainer, { backgroundColor: iconBg }]}>
           <Ionicons name="musical-notes" size={48} color="#FF6B35" />
         </View>
-        <Text style={styles.playlistName}>{playlist.name}</Text>
-        <Text style={styles.playlistCount}>
+        <Text style={[styles.playlistName, { color: textColor }]}>{playlist.name}</Text>
+        <Text style={[styles.playlistCount, { color: subTextColor }]}>
           {playlist.songs.length} songs{playlist.artists?.length ? `, ${playlist.artists.length} artists` : ''}
         </Text>
       </View>
@@ -82,6 +90,7 @@ export const PlaylistDetailsScreen = () => {
                 artist={item.data}
                 onPress={() => handleArtistPress(item.data.id)}
                 playlistId={playlist.id}
+                isDarkMode={isDarkMode}
               />
             );
           } else {
@@ -92,6 +101,7 @@ export const PlaylistDetailsScreen = () => {
                 showIndex={true}
                 index={item.originalIndex}
                 playlistId={playlist.id}
+                isDarkMode={isDarkMode}
               />
             );
           }
@@ -99,9 +109,9 @@ export const PlaylistDetailsScreen = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="musical-notes-outline" size={48} color="#ccc" />
-            <Text style={styles.emptyText}>Playlist is empty</Text>
-            <Text style={styles.emptySubText}>Add songs or artists to this playlist to see them here.</Text>
+            <Ionicons name="musical-notes-outline" size={48} color={subTextColor} />
+            <Text style={[styles.emptyText, { color: textColor }]}>Playlist is empty</Text>
+            <Text style={[styles.emptySubText, { color: subTextColor }]}>Add songs or artists to this playlist to see them here.</Text>
           </View>
         }
       />
@@ -112,7 +122,6 @@ export const PlaylistDetailsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -120,7 +129,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   backBtn: {
     marginRight: 16,
@@ -129,20 +137,17 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1A1A1A',
     flex: 1,
   },
   infoSection: {
     alignItems: 'center',
     paddingVertical: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
   },
   iconContainer: {
     width: 100,
     height: 100,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 107, 53, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -150,12 +155,10 @@ const styles = StyleSheet.create({
   playlistName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1A1A1A',
     marginBottom: 8,
   },
   playlistCount: {
     fontSize: 16,
-    color: '#888',
   },
   listContent: {
     paddingBottom: 100, // Space for mini player
@@ -169,12 +172,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     marginTop: 16,
   },
   emptySubText: {
     fontSize: 14,
-    color: '#888',
     marginTop: 8,
   },
 });

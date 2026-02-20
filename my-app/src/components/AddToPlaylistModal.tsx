@@ -1,17 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Modal,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  Alert,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import { usePlaylistStore } from '../store/playlistStore';
+import { useThemeStore } from '../store/themeStore';
 import { Artist, Playlist, Song } from '../types';
 
 interface AddToPlaylistModalProps {
@@ -32,8 +33,15 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
   onSuccess 
 }) => {
   const { playlists, loadPlaylists, createPlaylist, addSongToPlaylist, addArtistToPlaylist } = usePlaylistStore();
+  const { isDarkMode } = useThemeStore();
   const [isCreating, setIsCreating] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
+  const borderColor = isDarkMode ? '#333' : '#eee';
+  const inputBorder = isDarkMode ? '#444' : '#ddd';
 
   useEffect(() => {
     if (visible) {
@@ -70,14 +78,15 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
-            <View style={styles.container}>
-              <Text style={styles.headerTitle}>Add to Playlist</Text>
+            <View style={[styles.container, { backgroundColor: bgColor }]}>
+              <Text style={[styles.headerTitle, { color: textColor }]}>Add to Playlist</Text>
 
               {isCreating ? (
                 <View style={styles.createContainer}>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { borderColor: inputBorder, color: textColor }]}
                     placeholder="Playlist Name"
+                    placeholderTextColor={subTextColor}
                     value={newPlaylistName}
                     onChangeText={setNewPlaylistName}
                     autoFocus
@@ -93,7 +102,7 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
                 </View>
               ) : (
                 <>
-                  <TouchableOpacity style={styles.newPlaylistBtn} onPress={() => setIsCreating(true)}>
+                  <TouchableOpacity style={[styles.newPlaylistBtn, { borderBottomColor: borderColor }]} onPress={() => setIsCreating(true)}>
                     <Ionicons name="add-circle-outline" size={24} color="#FF6B35" />
                     <Text style={styles.newPlaylistText}>New Playlist</Text>
                   </TouchableOpacity>
@@ -116,13 +125,13 @@ export const AddToPlaylistModal: React.FC<AddToPlaylistModalProps> = ({
                           <Ionicons 
                             name="musical-notes-outline" 
                             size={24} 
-                            color={isAlreadyAdded ? "#ccc" : "#555"} 
+                            color={isAlreadyAdded ? (isDarkMode ? "#555" : "#ccc") : (isDarkMode ? "#aaa" : "#555")} 
                           />
                           <View style={styles.playlistInfo}>
-                            <Text style={[styles.playlistName, isAlreadyAdded && styles.textDisabled]}>
+                            <Text style={[styles.playlistName, { color: textColor }, isAlreadyAdded && styles.textDisabled]}>
                               {item.name}
                             </Text>
-                            <Text style={styles.playlistCount}>
+                            <Text style={[styles.playlistCount, { color: subTextColor }]}>
                               {item.songs.length} songs{item.artists?.length ? `, ${item.artists.length} artists` : ''}
                             </Text>
                           </View>
@@ -155,7 +164,6 @@ const styles = StyleSheet.create({
   },
   container: {
     width: '85%',
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     maxHeight: '70%',
@@ -164,14 +172,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: '#1A1A1A',
   },
   newPlaylistBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
     marginBottom: 8,
   },
   newPlaylistText: {
@@ -193,7 +199,6 @@ const styles = StyleSheet.create({
   },
   playlistName: {
     fontSize: 16,
-    color: '#1A1A1A',
   },
   playlistItemDisabled: {
     opacity: 0.7,
@@ -203,7 +208,6 @@ const styles = StyleSheet.create({
   },
   playlistCount: {
     fontSize: 12,
-    color: '#888',
     marginTop: 2,
   },
   emptyText: {
@@ -217,7 +221,6 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,

@@ -1,18 +1,18 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { HomeScreen } from '../screens/HomeScreen';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React from 'react';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
+import { HomeScreen } from '../screens/HomeScreen';
 import { PlaylistsScreen } from '../screens/PlaylistsScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { MainTabParamList } from '../types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-import { BackHandler } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useThemeStore } from '../store/themeStore';
 
 export const MainTabs = () => {
+  const { isDarkMode } = useThemeStore();
   // Handle Android Back Button
   // If on a tab other than 'Home', go to 'Home'.
   // If on 'Home', let default behavior happen (Exit App, handled by Root Stack usually, or we can explicit Exit).
@@ -33,8 +33,8 @@ export const MainTabs = () => {
         tabBarActiveTintColor: '#FF6B35',
         tabBarInactiveTintColor: '#888',
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: '#F5F5F5',
+          backgroundColor: isDarkMode ? '#1A1A1A' : '#fff',
+          borderTopColor: isDarkMode ? '#333' : '#F5F5F5',
           paddingTop: 8,
         },
         tabBarLabelStyle: {

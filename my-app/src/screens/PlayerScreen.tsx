@@ -1,22 +1,22 @@
-import React, { useCallback, useRef, useState } from 'react';
+import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  StatusBar,
-  Dimensions,
-  Platform,
+    Dimensions,
+    Image,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialIcons, Feather } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import Slider from '@react-native-community/slider';
-import { usePlayerStore } from '../store/playerStore';
 import { getBestImage } from '../services/api';
-import { getArtistName, formatMillis } from '../utils/helpers';
 import { useFavoritesStore } from '../store/favoritesStore';
+import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore } from '../store/themeStore';
+import { formatMillis, getArtistName } from '../utils/helpers';
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,6 +36,11 @@ export const PlayerScreen: React.FC = () => {
     toggleShuffle,
     toggleRepeat,
   } = usePlayerStore();
+
+  const { isDarkMode } = useThemeStore();
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#666';
 
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const favorite = currentSong ? isFavorite(currentSong.id) : false;
@@ -59,9 +64,9 @@ export const PlayerScreen: React.FC = () => {
 
   if (!currentSong) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: bgColor }]}>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No song playing</Text>
+          <Text style={[styles.emptyText, { color: subTextColor }]}>No song playing</Text>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backLink}>Go Back</Text>
           </TouchableOpacity>
@@ -86,19 +91,19 @@ export const PlayerScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: bgColor }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={bgColor} />
       
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn}>
-                <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+                <Ionicons name="arrow-back" size={24} color={textColor} />
             </TouchableOpacity>
             
             {/* Context/Lyrics Options */}
             <TouchableOpacity style={styles.headerBtn}>
-                <Ionicons name="ellipsis-horizontal" size={24} color="#1A1A1A" />
+                <Ionicons name="ellipsis-horizontal" size={24} color={textColor} />
             </TouchableOpacity>
         </View>
 
@@ -108,7 +113,7 @@ export const PlayerScreen: React.FC = () => {
                 {imageUrl ? (
                     <Image source={{ uri: imageUrl }} style={styles.artwork} />
                 ) : (
-                    <View style={[styles.artwork, styles.artworkPlaceholder]}>
+                    <View style={[styles.artworkPlace, { backgroundColor: isDarkMode ? '#2A2A2A' : '#F5F5F5' }]}>
                         <Ionicons name="musical-note" size={100} color="#FF6B35" />
                     </View>
                 )}
@@ -119,26 +124,26 @@ export const PlayerScreen: React.FC = () => {
         {/* Song Info */}
         <View style={styles.infoContainer}>
             <View style={{flex: 1}}>
-                <Text style={styles.title} numberOfLines={1}>{currentSong.name}</Text>
-                <Text style={styles.artist} numberOfLines={1}>{artist}</Text>
+                <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>{currentSong.name}</Text>
+                <Text style={[styles.artist, { color: subTextColor }]} numberOfLines={1}>{artist}</Text>
             </View>
             <TouchableOpacity 
                 style={styles.likeBtn}
                 onPress={() => currentSong && toggleFavorite(currentSong)}
             >
-                <Ionicons name={favorite ? "heart" : "heart-outline"} size={28} color={favorite ? "#FF6B35" : "#1A1A1A"} />
+                <Ionicons name={favorite ? "heart" : "heart-outline"} size={28} color={favorite ? "#FF6B35" : textColor} />
             </TouchableOpacity>
         </View>
 
         {/* Seek Bar */}
         <View style={styles.seekContainer}>
-            <Slider
+                <Slider
                 style={styles.slider}
                 minimumValue={0}
                 maximumValue={duration || 1}
                 value={displayPosition}
                 minimumTrackTintColor="#FF6B35"
-                maximumTrackTintColor="#EEE"
+                maximumTrackTintColor={isDarkMode ? "#444" : "#EEE"}
                 thumbTintColor="#FF6B35"
                 onSlidingStart={handleSlidingStart}
                 onValueChange={handleValueChange}
@@ -153,11 +158,11 @@ export const PlayerScreen: React.FC = () => {
         {/* Primary Controls */}
         <View style={styles.controlsRow}>
             <TouchableOpacity onPress={toggleShuffle}>
-                <Ionicons name="shuffle" size={24} color={isShuffle ? "#FF6B35" : "#888"} />
+                <Ionicons name="shuffle" size={24} color={isShuffle ? "#FF6B35" : subTextColor} />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={playPrevious}>
-                <Ionicons name="play-skip-back" size={32} color="#1A1A1A" />
+                <Ionicons name="play-skip-back" size={32} color={textColor} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.playBtn} onPress={togglePlayPause}>
@@ -165,31 +170,31 @@ export const PlayerScreen: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity onPress={playNext}>
-                <Ionicons name="play-skip-forward" size={32} color="#1A1A1A" />
+                <Ionicons name="play-skip-forward" size={32} color={textColor} />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={toggleRepeat}>
-                <MaterialIcons name={repeatIconName} size={24} color={repeatColor} />
+                <MaterialIcons name={repeatIconName} size={24} color={repeatColor === '#888' ? subTextColor : repeatColor} />
             </TouchableOpacity>
         </View>
 
         {/* Secondary Controls / Bottom Row */}
         <View style={styles.secondaryRow}>
             <TouchableOpacity style={styles.secondaryBtn}>
-                <Ionicons name="timer-outline" size={24} color="#1A1A1A" />
+                <Ionicons name="timer-outline" size={24} color={textColor} />
             </TouchableOpacity>
              <TouchableOpacity style={styles.secondaryBtn}>
-                <Feather name="cast" size={24} color="#1A1A1A" />
+                <Feather name="cast" size={24} color={textColor} />
             </TouchableOpacity>
              <TouchableOpacity style={styles.secondaryBtn}>
-                <Ionicons name="share-social-outline" size={24} color="#1A1A1A" />
+                <Ionicons name="share-social-outline" size={24} color={textColor} />
             </TouchableOpacity>
         </View>
 
         {/* Lyrics Hint */}
         <View style={styles.lyricsHint}>
-            <Ionicons name="chevron-up" size={24} color="#1A1A1A" />
-            <Text style={styles.lyricsText}>Lyrics</Text>
+            <Ionicons name="chevron-up" size={24} color={textColor} />
+            <Text style={[styles.lyricsText, { color: textColor }]}>Lyrics</Text>
         </View>
 
       </View>
@@ -200,7 +205,6 @@ export const PlayerScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
@@ -237,8 +241,9 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  artworkPlaceholder: {
-    backgroundColor: '#F5F5F5',
+  artworkPlace: {
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -251,12 +256,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1A1A1A',
     marginBottom: 4,
   },
   artist: {
     fontSize: 16,
-    color: '#666',
     fontWeight: '500',
   },
   likeBtn: {
@@ -317,7 +320,6 @@ const styles = StyleSheet.create({
   lyricsText: {
       fontSize: 14,
       fontWeight: '600',
-      color: '#1A1A1A',
       marginTop: -4,
   },
   emptyContainer: {
@@ -328,7 +330,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#888',
   },
   backLink: {
     fontSize: 16,

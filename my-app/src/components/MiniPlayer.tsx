@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { getBestImage } from '../services/api';
 import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore } from '../store/themeStore';
 import { RootStackParamList } from '../types';
 import { getArtistName } from '../utils/helpers';
 
@@ -21,8 +22,15 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export const MiniPlayer: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { currentSong, isPlaying, togglePlayPause, clearPlayer } = usePlayerStore();
+  const { isDarkMode } = useThemeStore();
   const [showTooltip, setShowTooltip] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
+  const tooltipBg = isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.85)';
+  const tooltipText = isDarkMode ? '#000' : '#fff';
 
   useEffect(() => {
     if (currentSong) {
@@ -74,7 +82,7 @@ export const MiniPlayer: React.FC = () => {
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, { backgroundColor: bgColor }]}
       onPress={() => navigation.navigate('Player')}
       onLongPress={handleLongPress}
       activeOpacity={0.95}
@@ -85,7 +93,7 @@ export const MiniPlayer: React.FC = () => {
           {imageUrl ? (
             <Image source={{ uri: imageUrl }} style={styles.image} />
           ) : (
-            <View style={[styles.image, styles.imagePlaceholder]}>
+            <View style={[styles.imagePlaceholder, { backgroundColor: isDarkMode ? '#2A2A2A' : '#F5F5F5' }]}>
               <Ionicons name="musical-note" size={18} color="#FF6B35" />
             </View>
           )}
@@ -93,10 +101,10 @@ export const MiniPlayer: React.FC = () => {
 
         {/* Song Info */}
         <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>
+          <Text style={[styles.name, { color: textColor }]} numberOfLines={1}>
             {currentSong.name}
           </Text>
-          <Text style={styles.artist} numberOfLines={1}>
+          <Text style={[styles.artist, { color: subTextColor }]} numberOfLines={1}>
             {artist}
           </Text>
         </View>
@@ -125,10 +133,10 @@ export const MiniPlayer: React.FC = () => {
       {/* Floating Tooltip */}
       {showTooltip && (
         <Animated.View style={[styles.tooltipContainer, { opacity: fadeAnim }]}>
-          <View style={styles.tooltipArrow} />
-          <View style={styles.tooltipContent}>
-            <Ionicons name="information-circle" size={16} color="#fff" style={styles.tooltipIcon} />
-            <Text style={styles.tooltipText}>Long press to remove player</Text>
+          <View style={[styles.tooltipArrow, { borderTopColor: tooltipBg }]} />
+          <View style={[styles.tooltipContent, { backgroundColor: tooltipBg }]}>
+            <Ionicons name="information-circle" size={16} color={tooltipText} style={styles.tooltipIcon} />
+            <Text style={[styles.tooltipText, { color: tooltipText }]}>Long press to remove player</Text>
           </View>
         </Animated.View>
       )}
@@ -138,7 +146,6 @@ export const MiniPlayer: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#1A1A1A',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     overflow: 'hidden',
@@ -163,7 +170,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   imagePlaceholder: {
-    backgroundColor: '#2A2A2A',
+    width: 44,
+    height: 44,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -174,12 +183,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
     marginBottom: 2,
   },
   artist: {
     fontSize: 12,
-    color: '#aaa',
   },
   controls: {
     flexDirection: 'row',
@@ -216,12 +223,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: 'rgba(0, 0, 0, 0.85)',
     position: 'absolute',
     bottom: -8,
   },
   tooltipContent: {
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -232,7 +237,6 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   tooltipText: {
-    color: '#fff',
     fontSize: 13,
     fontWeight: '500',
   },

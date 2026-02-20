@@ -1,14 +1,15 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { Album } from '../types';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getBestImage } from '../services/api';
+import { Album } from '../types';
 
 interface AlbumCardProps {
   album: Album;
   onPress: (album: Album) => void;
+  isDarkMode?: boolean;
 }
 
-export const AlbumCard: React.FC<AlbumCardProps> = ({ album, onPress }) => {
+export const AlbumCard: React.FC<AlbumCardProps> = ({ album, onPress, isDarkMode = false }) => {
   const imageUrl = getBestImage(album.image);
   
   // Format artist name (sometimes it's a string, sometimes array)
@@ -18,7 +19,13 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, onPress }) => {
 
   return (
     <TouchableOpacity 
-      style={styles.container} 
+      style={[
+        styles.container, 
+        { 
+          backgroundColor: isDarkMode ? '#2A2A2A' : '#fff',
+          shadowColor: isDarkMode ? 'transparent' : '#000', 
+        }
+      ]} 
       onPress={() => onPress(album)}
       activeOpacity={0.7}
     >
@@ -27,8 +34,8 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, onPress }) => {
         style={styles.image} 
       />
       <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>{album.name}</Text>
-        <Text style={styles.artist} numberOfLines={1}>
+        <Text style={[styles.name, { color: isDarkMode ? '#fff' : '#1A1A1A' }]} numberOfLines={1}>{album.name}</Text>
+        <Text style={[styles.artist, { color: isDarkMode ? '#aaa' : '#666' }]} numberOfLines={1}>
           {artistName} {album.year ? `• ${album.year}` : ''}
         </Text>
       </View>
@@ -40,7 +47,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     margin: 8,
-    backgroundColor: '#fff',
     borderRadius: 8,
     overflow: 'hidden',
     // Shadow for iOS
@@ -62,11 +68,9 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
     marginBottom: 4,
   },
   artist: {
     fontSize: 12,
-    color: '#666',
   },
 });

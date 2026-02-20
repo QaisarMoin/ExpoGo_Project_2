@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SongCard } from '../components/SongCard';
 import { getArtistDetails, getArtistSongs, getBestImage, searchSongs } from '../services/api';
 import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore } from '../store/themeStore';
 import { Artist, RootStackParamList, Song } from '../types';
 
 type ArtistDetailRouteProp = RouteProp<RootStackParamList, 'ArtistDetails'>;
@@ -26,6 +27,11 @@ export const ArtistDetailScreen: React.FC = () => {
   const route = useRoute<ArtistDetailRouteProp>();
   const { artistId, initialArtist } = route.params;
   const { playSong, playNext } = usePlayerStore();
+  const { isDarkMode } = useThemeStore();
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
 
   const [artist, setArtist] = useState<Artist | null>(initialArtist || null);
   const [songs, setSongs] = useState<Song[]>([]);
@@ -178,14 +184,14 @@ export const ArtistDetailScreen: React.FC = () => {
           <View style={styles.header}>
               <View style={styles.navBar}>
                   <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                      <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+                      <Ionicons name="arrow-back" size={24} color={textColor} />
                   </TouchableOpacity>
               </View>
               
               <View style={styles.profileSection}>
                   <Image source={{ uri: imageUrl || 'https://via.placeholder.com/150' }} style={styles.largeImage} />
-                  <Text style={styles.name}>{artist.name}</Text>
-                  <Text style={styles.stats}>
+                  <Text style={[styles.name, { color: textColor }]}>{artist.name}</Text>
+                  <Text style={[styles.stats, { color: subTextColor }]}>
                       {songCount > 0 ? (
                           <>
                            {albumCount > 0 ? `${albumCount} Albums | ` : ''}
@@ -213,8 +219,8 @@ export const ArtistDetailScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]} edges={['top']}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       {loading && !artist ? (
           <View style={styles.center}>
               <ActivityIndicator color="#FF6B35" size="large" />
@@ -229,6 +235,7 @@ export const ArtistDetailScreen: React.FC = () => {
                     song={item} 
                     onPlay={handlePlaySong} // Stable callback
                     // isActive={currentSong?.id === item.id} // Optional: Enable if needed (minor perf cost)
+                    isDarkMode={isDarkMode}
                 />
             )}
             onEndReached={() => {
@@ -257,7 +264,6 @@ export const ArtistDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
       flex: 1,
-      backgroundColor: '#fff',
   },
   center: {
       flex: 1,
@@ -292,13 +298,11 @@ const styles = StyleSheet.create({
   name: {
       fontSize: 24,
       fontWeight: 'bold',
-      color: '#1A1A1A',
       marginBottom: 8,
       textAlign: 'center',
   },
   stats: {
       fontSize: 14,
-      color: '#888',
   },
   buttonsRow: {
       flexDirection: 'row',

@@ -2,7 +2,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -13,7 +13,6 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    useColorScheme,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +21,7 @@ import { ArtistCard } from '../components/ArtistCard';
 import { SongCard } from '../components/SongCard';
 import { searchAlbums, searchArtists, searchSongs } from '../services/api';
 import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore } from '../store/themeStore';
 import { Album, Artist, RootStackParamList, Song } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -42,8 +42,11 @@ const RECENT_SEARCHES = [
 export const SearchScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { playSong, currentSong, isPlaying } = usePlayerStore();
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const { isDarkMode, loadTheme } = useThemeStore();
+
+  useEffect(() => {
+    loadTheme();
+  }, []);
 
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<SearchTab>('Songs');

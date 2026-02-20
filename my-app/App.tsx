@@ -1,4 +1,4 @@
-import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { registerRootComponent } from 'expo';
 import React, { useEffect, useState } from 'react';
@@ -16,12 +16,14 @@ import { QueueScreen } from './src/screens/QueueScreen';
 import { SearchScreen } from './src/screens/SearchScreen';
 import { audioService } from './src/services/audioService';
 import { usePlayerStore } from './src/store/playerStore';
+import { useThemeStore } from './src/store/themeStore';
 import { RootStackParamList } from './src/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppContent() {
   const { loadPersistedData, currentSong, isMiniPlayerVisible } = usePlayerStore();
+  const { isDarkMode, loadTheme } = useThemeStore();
   const navigationRef = useNavigationContainerRef();
   const [routeName, setRouteName] = useState<string | undefined>();
   const insets = useSafeAreaInsets();
@@ -31,6 +33,8 @@ function AppContent() {
     audioService.init();
     // Load persisted queue and last song
     loadPersistedData();
+    // Load theme preference
+    loadTheme();
   }, []);
 
   const handleStateChange = () => {
@@ -54,10 +58,33 @@ function AppContent() {
   
   const bottomPosition = isMainTabs ? (49 + insets.bottom) : 0;
 
+  const MyDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: '#1A1A1A',
+      card: '#2A2A2A',
+      text: '#FFFFFF',
+      border: '#333333',
+    },
+  };
+
+  const MyLightTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: '#FFFFFF',
+      card: '#FFFFFF',
+      text: '#1A1A1A',
+      border: '#F0F0F0',
+    },
+  };
+
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: isDarkMode ? '#1A1A1A' : '#fff' }]}>
       <NavigationContainer
         ref={navigationRef}
+        theme={isDarkMode ? MyDarkTheme : MyLightTheme}
         onReady={handleStateChange}
         onStateChange={handleStateChange}
       >

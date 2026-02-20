@@ -5,8 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SongCard } from '../components/SongCard';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore } from '../store/themeStore';
 
 export const FavoritesScreen = () => {
+  const { isDarkMode } = useThemeStore();
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
+  const borderColor = isDarkMode ? '#333' : '#f0f0f0';
+
   const { favorites, loadFavorites } = useFavoritesStore();
   const { playSong, currentSong, isPlaying } = usePlayerStore();
 
@@ -22,18 +29,18 @@ export const FavoritesScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View style={styles.header}>
-        <Text style={styles.title}>Favorites</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={bgColor} />
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
+        <Text style={[styles.title, { color: textColor }]}>Favorites</Text>
       </View>
 
       {favorites.length === 0 ? (
         // Empty State
         <View style={styles.emptyContainer}>
-          <Ionicons name="heart-outline" size={64} color="#ddd" />
-          <Text style={styles.emptyText}>No favorites yet</Text>
-          <Text style={styles.emptySubText}>Like songs to see them here</Text>
+          <Ionicons name="heart-outline" size={64} color={subTextColor} />
+          <Text style={[styles.emptyText, { color: textColor }]}>No favorites yet</Text>
+          <Text style={[styles.emptySubText, { color: subTextColor }]}>Like songs to see them here</Text>
         </View>
       ) : (
         // List of Favorite Songs
@@ -48,6 +55,7 @@ export const FavoritesScreen = () => {
               isPlaying={currentSong?.id === item.id && isPlaying}
               showIndex
               index={index}
+              isDarkMode={isDarkMode}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -60,18 +68,15 @@ export const FavoritesScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1A1A1A',
   },
   listContent: {
     paddingBottom: 100,
@@ -85,11 +90,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 18,
     fontWeight: '600',
-    color: '#1A1A1A',
   },
   emptySubText: {
     marginTop: 8,
     fontSize: 14,
-    color: '#888',
   },
 });

@@ -5,11 +5,20 @@ import React, { useEffect } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlaylistStore } from '../store/playlistStore';
+import { useThemeStore } from '../store/themeStore';
 import { Playlist, RootStackParamList } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const PlaylistsScreen = () => {
+  const { isDarkMode } = useThemeStore();
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
+  const borderColor = isDarkMode ? '#333' : '#F0F0F0';
+  const itemBorderColor = isDarkMode ? '#333' : '#F5F5F5';
+  const iconBg = isDarkMode ? 'rgba(255, 107, 53, 0.2)' : 'rgba(255, 107, 53, 0.1)';
+
   const { playlists, loadPlaylists, deletePlaylist } = usePlaylistStore();
   const navigation = useNavigation<NavigationProp>();
 
@@ -30,15 +39,15 @@ export const PlaylistsScreen = () => {
 
   const renderItem = ({ item }: { item: Playlist }) => (
     <TouchableOpacity 
-      style={styles.playlistItem}
+      style={[styles.playlistItem, { borderBottomColor: itemBorderColor }]}
       onPress={() => navigation.navigate('PlaylistDetails', { playlistId: item.id })}
     >
-      <View style={styles.iconContainer}>
+      <View style={[styles.iconContainer, { backgroundColor: iconBg }]}>
         <Ionicons name="musical-notes" size={24} color="#FF6B35" />
       </View>
       <View style={styles.playlistInfo}>
-        <Text style={styles.playlistName}>{item.name}</Text>
-        <Text style={styles.playlistCount}>
+        <Text style={[styles.playlistName, { color: textColor }]}>{item.name}</Text>
+        <Text style={[styles.playlistCount, { color: subTextColor }]}>
           {item.songs.length} songs{item.artists?.length ? `, ${item.artists.length} artists` : ''}
         </Text>
       </View>
@@ -49,9 +58,9 @@ export const PlaylistsScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Playlists</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
+        <Text style={[styles.headerTitle, { color: textColor }]}>Playlists</Text>
       </View>
       
       <FlatList
@@ -61,9 +70,9 @@ export const PlaylistsScreen = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="albums-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>No playlists yet</Text>
-            <Text style={styles.emptySubText}>Add songs to a playlist to see them here.</Text>
+            <Ionicons name="albums-outline" size={64} color={subTextColor} />
+            <Text style={[styles.emptyText, { color: textColor }]}>No playlists yet</Text>
+            <Text style={[styles.emptySubText, { color: subTextColor }]}>Add songs to a playlist to see them here.</Text>
           </View>
         }
       />
@@ -74,18 +83,15 @@ export const PlaylistsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1A1A1A',
   },
   listContent: {
     padding: 16,
@@ -96,13 +102,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
   },
   iconContainer: {
     width: 48,
     height: 48,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 107, 53, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -113,12 +117,10 @@ const styles = StyleSheet.create({
   playlistName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A1A1A',
     marginBottom: 4,
   },
   playlistCount: {
     fontSize: 13,
-    color: '#888',
   },
   deleteBtn: {
     padding: 8,
@@ -132,12 +134,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     marginTop: 16,
   },
   emptySubText: {
     fontSize: 14,
-    color: '#888',
     marginTop: 8,
     textAlign: 'center',
   },

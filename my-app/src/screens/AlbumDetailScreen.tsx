@@ -1,22 +1,23 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  FlatList,
-  StatusBar,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList, Album, Song } from '../types';
+import { SongCard } from '../components/SongCard';
 import { getAlbumDetails, getBestImage } from '../services/api';
 import { usePlayerStore } from '../store/playerStore';
-import { SongCard } from '../components/SongCard';
+import { useThemeStore } from '../store/themeStore';
+import { Album, RootStackParamList, Song } from '../types';
 
 type AlbumDetailRouteProp = RouteProp<RootStackParamList, 'AlbumDetails'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -26,6 +27,11 @@ export const AlbumDetailScreen: React.FC = () => {
   const route = useRoute<AlbumDetailRouteProp>();
   const { albumId } = route.params;
   const { playSong } = usePlayerStore();
+  const { isDarkMode } = useThemeStore();
+  
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#888';
 
   const [album, setAlbum] = useState<Album | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
@@ -93,15 +99,15 @@ export const AlbumDetailScreen: React.FC = () => {
           <View style={styles.header}>
               <View style={styles.navBar}>
                   <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                      <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+                      <Ionicons name="arrow-back" size={24} color={textColor} />
                   </TouchableOpacity>
               </View>
               
               <View style={styles.profileSection}>
                   <Image source={{ uri: imageUrl || 'https://via.placeholder.com/150' }} style={styles.largeImage} />
-                  <Text style={styles.name}>{album.name}</Text>
+                  <Text style={[styles.name, { color: textColor }]}>{album.name}</Text>
                   <Text style={styles.artistName}>{artistName}</Text>
-                  <Text style={styles.stats}>
+                  <Text style={[styles.stats, { color: subTextColor }]}>
                       {songCount} Songs {totalDurationSec > 0 ? `| ${durationText}` : ''}
                       {album.year ? ` | ${album.year}` : ''}
                   </Text>
@@ -123,8 +129,8 @@ export const AlbumDetailScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]} edges={['top']}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       {loading && !album ? (
           <View style={styles.center}>
               <ActivityIndicator color="#FF6B35" size="large" />
@@ -140,6 +146,7 @@ export const AlbumDetailScreen: React.FC = () => {
                     onPlay={handlePlaySong} 
                     showIndex={true}
                     index={index + 1}
+                    isDarkMode={isDarkMode}
                 />
             )}
             // Performance Props
@@ -160,7 +167,6 @@ export const AlbumDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
       flex: 1,
-      backgroundColor: '#fff',
   },
   center: {
       flex: 1,
@@ -200,7 +206,6 @@ const styles = StyleSheet.create({
   name: {
       fontSize: 22,
       fontWeight: 'bold',
-      color: '#1A1A1A',
       marginBottom: 4,
       textAlign: 'center',
   },
@@ -213,7 +218,6 @@ const styles = StyleSheet.create({
   },
   stats: {
       fontSize: 14,
-      color: '#888',
   },
   buttonsRow: {
       flexDirection: 'row',

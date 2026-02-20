@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { getBestImage } from '../services/api';
 import { usePlaylistStore } from '../store/playlistStore';
+import { useThemeStore } from '../store/themeStore';
 import { Artist, MainTabParamList, RootStackParamList } from '../types';
 import { AddToPlaylistModal } from './AddToPlaylistModal';
 
@@ -38,6 +39,13 @@ export const ArtistOptionsModal: React.FC<ArtistOptionsModalProps> = ({ visible,
   const { removeArtistFromPlaylist } = usePlaylistStore();
   const navigation = useNavigation<NavigationProp>();
   const [playlistModalVisible, setPlaylistModalVisible] = useState(false);
+  const { isDarkMode } = useThemeStore();
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#666';
+  const dividerColor = isDarkMode ? '#333' : '#F0F0F0';
+  const dragHandleColor = isDarkMode ? '#444' : '#E0E0E0';
 
   const handleAddToPlaylist = () => {
     setPlaylistModalVisible(true);
@@ -75,26 +83,26 @@ export const ArtistOptionsModal: React.FC<ArtistOptionsModalProps> = ({ visible,
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
-            <View style={styles.modalContainer}>
+            <View style={[styles.modalContainer, { backgroundColor: bgColor }]}>
               <View style={styles.dragHandleContainer}>
-                <View style={styles.dragHandle} />
+                <View style={[styles.dragHandle, { backgroundColor: dragHandleColor }]} />
               </View>
               
               <View style={styles.header}>
                 <Image source={{ uri: imageUrl }} style={styles.image} />
                 <View style={styles.headerInfo}>
-                  <Text style={styles.title} numberOfLines={1}>{artist.name}</Text>
-                  <Text style={styles.subtitle} numberOfLines={1}>Artist</Text>
+                  <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>{artist.name}</Text>
+                  <Text style={[styles.subtitle, { color: subTextColor }]} numberOfLines={1}>Artist</Text>
                 </View>
               </View>
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.optionsContainer}>
                 {options.map((item, index) => (
                   <TouchableOpacity key={index} style={styles.optionRow} onPress={item.onPress}>
-                    <Ionicons name={item.icon as any} size={22} color="#333" style={styles.optionIcon} />
-                    <Text style={styles.optionLabel}>{item.label}</Text>
+                    <Ionicons name={item.icon as any} size={22} color={textColor} style={styles.optionIcon} />
+                    <Text style={[styles.optionLabel, { color: textColor }]}>{item.label}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -121,7 +129,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -135,7 +142,6 @@ const styles = StyleSheet.create({
   dragHandle: {
     width: 40,
     height: 4,
-    backgroundColor: '#E0E0E0',
     borderRadius: 2,
   },
   header: {
@@ -156,16 +162,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1A1A1A',
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 13,
-    color: '#666',
   },
   divider: {
     height: 1,
-    backgroundColor: '#F0F0F0',
     marginBottom: 16,
   },
   optionsContainer: {
@@ -181,7 +184,6 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 16,
-    color: '#333',
     fontWeight: '500',
   },
 });

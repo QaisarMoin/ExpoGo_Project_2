@@ -18,6 +18,7 @@ import { getBestImage } from '../services/api';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { usePlayerStore } from '../store/playerStore';
 import { usePlaylistStore } from '../store/playlistStore';
+import { useThemeStore } from '../store/themeStore';
 import { MainTabParamList, RootStackParamList, Song } from '../types';
 import { formatDuration, getArtistName } from '../utils/helpers';
 import { AddToPlaylistModal } from './AddToPlaylistModal';
@@ -47,6 +48,13 @@ export const SongOptionsModal: React.FC<SongOptionsModalProps> = ({ visible, onC
   const { removeSongFromPlaylist } = usePlaylistStore();
   const navigation = useNavigation<NavigationProp>();
   const [playlistModalVisible, setPlaylistModalVisible] = React.useState(false);
+  const { isDarkMode } = useThemeStore();
+
+  const bgColor = isDarkMode ? '#1A1A1A' : '#fff';
+  const textColor = isDarkMode ? '#fff' : '#1A1A1A';
+  const subTextColor = isDarkMode ? '#aaa' : '#666';
+  const dividerColor = isDarkMode ? '#333' : '#F0F0F0';
+  const dragHandleColor = isDarkMode ? '#444' : '#E0E0E0';
 
   const handlePlayNext = () => {
     enqueueNext(song);
@@ -105,9 +113,9 @@ export const SongOptionsModal: React.FC<SongOptionsModalProps> = ({ visible, onC
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
-            <View style={styles.modalContainer}>
+            <View style={[styles.modalContainer, { backgroundColor: bgColor }]}>
               <View style={styles.dragHandleContainer}>
-                <View style={styles.dragHandle} />
+                <View style={[styles.dragHandle, { backgroundColor: dragHandleColor }]} />
               </View>
               
               <View style={styles.header}>
@@ -127,15 +135,21 @@ export const SongOptionsModal: React.FC<SongOptionsModalProps> = ({ visible, onC
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.optionsContainer}>
-                {options.map((item, index) => (
-                  <TouchableOpacity key={index} style={styles.optionRow} onPress={item.onPress}>
-                    <Ionicons name={item.icon as any} size={22} color={item.label === 'Go to Album' && !song.album?.id ? '#ccc' : '#333'} style={styles.optionIcon} />
-                    <Text style={[styles.optionLabel, item.label === 'Go to Album' && !song.album?.id ? { color: '#ccc' } : {}]}>{item.label}</Text>
-                  </TouchableOpacity>
-                ))}
+                {options.map((item, index) => {
+                  const isGoToAlbumDisabled = item.label === 'Go to Album' && !song.album?.id;
+                  const iconColor = isGoToAlbumDisabled ? (isDarkMode ? '#555' : '#ccc') : textColor;
+                  const labelColor = isGoToAlbumDisabled ? (isDarkMode ? '#555' : '#ccc') : textColor;
+
+                  return (
+                    <TouchableOpacity key={index} style={styles.optionRow} onPress={item.onPress}>
+                      <Ionicons name={item.icon as any} size={22} color={iconColor} style={styles.optionIcon} />
+                      <Text style={[styles.optionLabel, { color: labelColor }]}>{item.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </ScrollView>
             </View>
           </TouchableWithoutFeedback>
@@ -160,7 +174,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -174,7 +187,6 @@ const styles = StyleSheet.create({
   dragHandle: {
     width: 40,
     height: 4,
-    backgroundColor: '#E0E0E0',
     borderRadius: 2,
   },
   header: {
@@ -195,19 +207,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1A1A1A',
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 13,
-    color: '#666',
   },
   favoriteBtn: {
     padding: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: '#F0F0F0',
     marginBottom: 16,
   },
   optionsContainer: {
@@ -223,7 +232,6 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 16,
-    color: '#333',
     fontWeight: '500',
   },
 });
