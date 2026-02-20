@@ -14,6 +14,7 @@ interface PlayerState {
   position: number;
   duration: number;
   isLoading: boolean;
+  isMiniPlayerVisible: boolean;
 
   isShuffle: boolean;
   repeatMode: 'off' | 'one' | 'all';
@@ -38,6 +39,7 @@ interface PlayerState {
   setPosition: (position: number) => void;
   setDuration: (duration: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
+  setMiniPlayerVisible: (visible: boolean) => void;
   loadPersistedData: () => Promise<void>;
   clearPlayer: () => Promise<void>;
 }
@@ -50,6 +52,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   position: 0,
   duration: 0,
   isLoading: false,
+  isMiniPlayerVisible: false,
 
   playSong: async (song: Song, queue?: Song[]) => {
     const state = get();
@@ -61,7 +64,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       index = newQueue.length - 1;
     }
 
-    set({ currentSong: song, currentIndex: index, queue: newQueue, isLoading: true, position: 0 });
+    set({ currentSong: song, currentIndex: index, queue: newQueue, isLoading: true, position: 0, isMiniPlayerVisible: true });
 
     // Persist
     await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(newQueue));
@@ -92,7 +95,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   clearPlayer: async () => {
     await audioService.pause();
-    set({ currentSong: null, isPlaying: false, queue: [], currentIndex: -1, position: 0, duration: 0 });
+    set({ currentSong: null, isPlaying: false, queue: [], currentIndex: -1, position: 0, duration: 0, isMiniPlayerVisible: false });
     await AsyncStorage.removeItem(QUEUE_KEY);
     await AsyncStorage.removeItem(LAST_SONG_KEY);
   },
@@ -226,6 +229,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   setPosition: (position: number) => set({ position }),
   setDuration: (duration: number) => set({ duration }),
   setIsPlaying: (isPlaying: boolean) => set({ isPlaying }),
+  setMiniPlayerVisible: (visible: boolean) => set({ isMiniPlayerVisible: visible }),
 
   loadPersistedData: async () => {
     try {
@@ -239,9 +243,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
       if (lastSong && queue.length > 0) {
         const index = queue.findIndex((s: Song) => s.id === lastSong.id);
-        set({ queue, currentSong: lastSong, currentIndex: index >= 0 ? index : 0 });
+        // Load the queue and state, but keep MiniPlayer hidden until they hit play
+        set({ queue, currentSong: lastSong, currentIndex: index >= 0 ? index : 0, isMiniPlayerVisible: false });
       } else if (queue.length > 0) {
-        set({ queue });
+        set({ queue, isMiniPlayerVisible: false });
       }
     } catch (e) {
       console.error('Failed to load persisted data:', e);

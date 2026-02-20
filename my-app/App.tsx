@@ -21,7 +21,7 @@ import { RootStackParamList } from './src/types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppContent() {
-  const { loadPersistedData, currentSong } = usePlayerStore();
+  const { loadPersistedData, currentSong, isMiniPlayerVisible } = usePlayerStore();
   const navigationRef = useNavigationContainerRef();
   const [routeName, setRouteName] = useState<string | undefined>();
   const insets = useSafeAreaInsets();
@@ -38,8 +38,8 @@ function AppContent() {
     setRouteName(currentRoute?.name);
   };
 
-  // Hide MiniPlayer on PlayerScreen
-  const showMiniPlayer = currentSong && routeName !== 'Player';
+  // Hide MiniPlayer on PlayerScreen or if it's explicitly hidden
+  const showMiniPlayer = isMiniPlayerVisible && currentSong && routeName !== 'Player';
   
   // Adjust bottom position: 
   // On MainTabs, bottom = TabBarHeight (approx 49) + insets.bottom
