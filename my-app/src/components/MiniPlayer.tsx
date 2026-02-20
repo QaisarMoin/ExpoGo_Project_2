@@ -1,34 +1,47 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { usePlayerStore } from '../store/playerStore';
+import React from 'react';
+import {
+    Alert,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { getBestImage } from '../services/api';
-import { getArtistName } from '../utils/helpers';
+import { usePlayerStore } from '../store/playerStore';
 import { RootStackParamList } from '../types';
+import { getArtistName } from '../utils/helpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const MiniPlayer: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { currentSong, isPlaying, togglePlayPause } = usePlayerStore();
+  const { currentSong, isPlaying, togglePlayPause, clearPlayer } = usePlayerStore();
 
   if (!currentSong) return null;
 
   const imageUrl = getBestImage(currentSong.image);
   const artist = getArtistName(currentSong);
 
+  const handleLongPress = () => {
+    Alert.alert(
+      'Remove MiniPlayer',
+      'Are you sure you want to clear the player?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Remove', style: 'destructive', onPress: clearPlayer },
+      ]
+    );
+  };
+
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={() => navigation.navigate('Player')}
+      onLongPress={handleLongPress}
       activeOpacity={0.95}
     >
       <View style={styles.content}>

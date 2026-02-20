@@ -48,13 +48,11 @@ function AppContent() {
   const isMainTabs = !routeName || ['Home', 'Favorites', 'Playlists', 'Settings'].includes(routeName);
   
   // Tab Bar standard height is usually 49. Expo/ReactNav adds padding for safe area.
-  // We want MiniPlayer to sit right above the tab bar content.
+  // We want MiniPlayer to sit right above the tab bar content flush.
   // The tab bar usually extends to the bottom edge.
-  // So we need to lift MiniPlayer by (49 + insets.bottom + some spacing).
-  // Actually, standard TabBar height is ~50-60px logic inclusive of labels.
-  // Let's use 60 + insets.bottom to be safe and clear.
+  // So we need to lift MiniPlayer by EXACTLY (49 + insets.bottom).
   
-  const bottomPosition = isMainTabs ? (60 + insets.bottom) : 0;
+  const bottomPosition = isMainTabs ? (49 + insets.bottom) : 0;
 
   return (
     <View style={styles.root}>
@@ -131,7 +129,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    // Bottom padding to ensure it doesn't stick to edge on QueueScreen
-    paddingBottom: 0, 
+    // Ensure no extra margins are adding gaps
+    margin: 0,
+    padding: 0,
   },
 });

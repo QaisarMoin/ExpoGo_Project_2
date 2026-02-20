@@ -1,7 +1,7 @@
-import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Song } from '../types';
+import { create } from 'zustand';
 import { audioService } from '../services/audioService';
+import { Song } from '../types';
 
 const QUEUE_KEY = '@music_player_queue';
 const LAST_SONG_KEY = '@music_player_last_song';
@@ -39,6 +39,7 @@ interface PlayerState {
   setDuration: (duration: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
   loadPersistedData: () => Promise<void>;
+  clearPlayer: () => Promise<void>;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -87,6 +88,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       await audioService.resume();
       set({ isPlaying: true });
     }
+  },
+
+  clearPlayer: async () => {
+    await audioService.pause();
+    set({ currentSong: null, isPlaying: false, queue: [], currentIndex: -1, position: 0, duration: 0 });
+    await AsyncStorage.removeItem(QUEUE_KEY);
+    await AsyncStorage.removeItem(LAST_SONG_KEY);
   },
 
   isShuffle: false,
