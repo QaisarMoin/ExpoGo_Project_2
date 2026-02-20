@@ -4,6 +4,7 @@ export type RootStackParamList = {
   Queue: undefined;
   ArtistDetails: { artistId: string; initialArtist?: Artist };
   AlbumDetails: { albumId: string; };
+  PlaylistDetails: { playlistId: string; };
   Search: undefined;
 };
 
@@ -38,6 +39,18 @@ export interface Song {
     featured?: Artist[];
     all?: Artist[];
   };
+  album?: {
+    id: string;
+    name: string;
+    url: string;
+  };
+}
+
+export interface Playlist {
+  id: string;
+  name: string;
+  songs: Song[];
+  createdAt: number;
 }
 
 export interface SearchResponse {

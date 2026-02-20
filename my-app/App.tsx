@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { registerRootComponent } from 'expo';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { registerRootComponent } from 'expo';
 
-import { MainTabs } from './src/navigation/MainTabs';
-import { PlayerScreen } from './src/screens/PlayerScreen';
-import { QueueScreen } from './src/screens/QueueScreen';
-import { ArtistDetailScreen } from './src/screens/ArtistDetailScreen';
-import { AlbumDetailScreen } from './src/screens/AlbumDetailScreen';
-import { SearchScreen } from './src/screens/SearchScreen';
 import { MiniPlayer } from './src/components/MiniPlayer';
-import { usePlayerStore } from './src/store/playerStore';
+import { MainTabs } from './src/navigation/MainTabs';
+import { AlbumDetailScreen } from './src/screens/AlbumDetailScreen';
+import { ArtistDetailScreen } from './src/screens/ArtistDetailScreen';
+import { PlayerScreen } from './src/screens/PlayerScreen';
+import { PlaylistDetailsScreen } from './src/screens/PlaylistDetailsScreen';
+import { QueueScreen } from './src/screens/QueueScreen';
+import { SearchScreen } from './src/screens/SearchScreen';
 import { audioService } from './src/services/audioService';
+import { usePlayerStore } from './src/store/playerStore';
 import { RootStackParamList } from './src/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -86,7 +87,12 @@ function AppContent() {
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen 
-            name="Search" 
+            name="PlaylistDetails" 
+            component={PlaylistDetailsScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen 
+            name="Search"  
             component={SearchScreen}
             options={{ animation: 'fade_from_bottom' }}
           />

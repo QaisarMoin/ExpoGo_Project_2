@@ -1,17 +1,18 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Song } from '../types';
-import { getBestImage, getBestDownloadUrl } from '../services/api';
-import { getArtistName, formatDuration } from '../utils/helpers';
-
+import React, { useState } from 'react';
+import {
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { getBestImage } from '../services/api';
 import { useFavoritesStore } from '../store/favoritesStore';
+import { usePlayerStore } from '../store/playerStore';
+import { Song } from '../types';
+import { formatDuration, getArtistName } from '../utils/helpers';
+import { SongOptionsModal } from './SongOptionsModal';
 
 interface SongCardProps {
   song: Song;
@@ -30,14 +31,27 @@ export const SongCard = React.memo<SongCardProps>(({
   showIndex = false,
   index,
 }) => {
+  const [modalVisible, setModalVisible] = useState(false);
   const imageUrl = getBestImage(song.image);
   const artist = getArtistName(song);
   const duration = formatDuration(song.duration);
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const favorite = isFavorite(song.id);
 
+  // Check queue status
+  const queue = usePlayerStore(state => state.queue);
+  const currentIndex = usePlayerStore(state => state.currentIndex);
+  
+  const isCurrentlyPlaying = queue[currentIndex]?.id === song.id;
+  const isPlayNext = queue.length > 0 && currentIndex + 1 < queue.length && queue[currentIndex + 1]?.id === song.id;
+
   return (
-    <View style={[styles.container, isActive && styles.activeContainer]}>
+    <View style={[
+      styles.container, 
+      isActive && styles.activeContainer,
+      isCurrentlyPlaying && styles.playingContainer,
+      isPlayNext && styles.playNextContainer,
+    ]}>
         <TouchableOpacity 
             style={styles.mainClick} 
             onPress={() => onPlay(song)}
@@ -69,10 +83,16 @@ export const SongCard = React.memo<SongCardProps>(({
                 <Ionicons name={favorite ? "heart" : "heart-outline"} size={22} color={favorite ? "#FF6B35" : "#888"} />
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.moreBtn}>
+            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.moreBtn}>
                 <Ionicons name="ellipsis-vertical" size={20} color="#888" />
             </TouchableOpacity>
         </View>
+
+        <SongOptionsModal 
+          visible={modalVisible} 
+          onClose={() => setModalVisible(false)} 
+          song={song} 
+        />
     </View>
   );
 });
@@ -88,6 +108,12 @@ const styles = StyleSheet.create({
   },
   activeContainer: {
     backgroundColor: '#FFF5F1',
+  },
+  playingContainer: {
+    backgroundColor: 'rgba(255, 107, 53, 0.1)', // Light orange transparent
+  },
+  playNextContainer: {
+    backgroundColor: 'rgba(76, 175, 80, 0.1)', // Light green transparent
   },
   mainClick: {
       flex: 1,

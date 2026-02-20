@@ -1,4 +1,4 @@
-import { Song, SearchResponse, SongDetailResponse, Artist, SearchArtistResponse, Album, SearchAlbumResponse } from '../types';
+import { Album, Artist, SearchAlbumResponse, SearchArtistResponse, SearchResponse, Song, SongDetailResponse } from '../types';
 
 const BASE_URL = 'https://saavn.sumit.co';
 
@@ -30,7 +30,8 @@ function normalizeSong(item: any): Song {
     primaryArtists: item.primaryArtists || (item.artists?.primary ? item.artists.primary.map((a: any) => a.name).join(', ') : ''),
     image: (typeof item.image === 'string') ? [{ quality: '500x500', url: item.image }] : item.image || [],
     downloadUrl: item.downloadUrl || [],
-    artists: item.artists
+    artists: item.artists,
+    album: item.album ? { id: item.album.id, name: item.album.name, url: item.album.url } : undefined
   };
 }
 
